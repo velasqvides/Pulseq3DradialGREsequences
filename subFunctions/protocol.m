@@ -21,7 +21,7 @@ classdef protocol < handle
         TE (1,1) double {mustBeNumeric}=2.21e-3
         TR (1,1) double {mustBeNumeric}=4.36e-3
         systemLimits (1,1) struct
-    end
+        end
     
     properties(Constant,Hidden)
         nSamples_min = 64
@@ -70,7 +70,9 @@ classdef protocol < handle
             requieredDummyScans = round(requieredDummyScans);
             error = error * 100;
             
-            if obj.nDummyScans ~= requieredDummyScans
+            if obj.nDummyScans == requieredDummyScans
+                fprintf('**The number of dummy scans seem to be optimal.\n\n')
+            else    
                 fprintf('**For the current TR and flip angle, the Suggested # of dummy scans to have a signal within\n')
                 fprintf('%4.2f%% of the steady-sate value is: %i. Current value: %i.\n\n',error, requieredDummyScans,obj.nDummyScans)
             end

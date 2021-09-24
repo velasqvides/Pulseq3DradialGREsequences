@@ -151,11 +151,15 @@ classdef SoSprotocol < protocol
         function validateProtocol(obj)
             
             validateResolution(obj)                      
-            validateResolutionZ(obj)
-            
+            validateResolutionZ(obj)            
+            fprintf('Tip: type: inputs, to double check the parameter values. \n\n')
             
         end
-        
+          
+        function validateTEandTR(obj)
+           
+            kernel =  
+        end
     end
     
 end

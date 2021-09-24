@@ -21,6 +21,7 @@ classdef protocol < handle
         TE (1,1) double {mustBeNumeric}=2.21e-3
         TR (1,1) double {mustBeNumeric}=4.36e-3
         systemLimits (1,1) struct
+        T1 (1,1) double =
     end
     
     properties(Constant,Hidden)
@@ -61,14 +62,14 @@ classdef protocol < handle
             gradientAmplitude = obj.nSamples * obj.bandwidthPerPixel / obj.FOV;
         end
         
-        function estimateNdummyScans(obj,T1,error)
+        function estimateNdummyScans(obj)
             flipAngleRad = obj.flipAngle * pi / 180;
             % eq. (9.22) of the book.
-            requieredDummyScans =  log( (error)*(1 - exp(-obj.TR/T1)) / (1 - cos(flipAngleRad)) ) /...
-                log( cos(flipAngleRad) * exp(-obj.TR/T1) );
+            requieredDummyScans =  log( (obj.error)*(1 - exp(-obj.TR/obj.T1)) / (1 - cos(flipAngleRad)) ) /...
+                log( cos(flipAngleRad) * exp(-obj.TR/obj.T1) );
             
             requieredDummyScans = round(requieredDummyScans);
-            error = error * 100;
+            error = obj.error * 100;
             
             if obj.nDummyScans ~= requieredDummyScans
                 fprintf('**For the current TR and flip angle, the Suggested # of dummy scans to have a signal within\n')
@@ -104,7 +105,7 @@ classdef protocol < handle
                 toPrint = sprintf('**nSamples =%i has to be changed to %i to keep the spatial resolution above the limit:%5.4f\n',nSamples_old, nSamples_new, obj.spatialResolution_max);
                 obj.nSamples = nSamples_new;            
             end
-            if ~strcmp('',toPrint)
+            if ~strcmp(' ',toPrint)
             report{end+1} = toPrint;
             end
             
@@ -127,12 +128,12 @@ classdef protocol < handle
                 toPrint = append(text1,text2);
                 obj.bandwidthPerPixel = BWpixel_new;            
             end
-            if ~isempty(toPrint)
+            if ~strcmp(' ',toPrint)
             report{end+1} = toPrint;
             end
             
-            if size(report,2) == 3
-                report{end+1} = sprintf('All resolution parameters accepted\n');
+            if size(report,2) == 1
+                report{end+1} = sprintf('All in-plane resolution parameters accepted\n');
             end
             report{end+1} = sprintf('###...Done.\n\n');            
             fprintf([report{:}]);

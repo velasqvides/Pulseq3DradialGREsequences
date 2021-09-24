@@ -18,8 +18,8 @@ classdef SoSprotocol < protocol
         nPartitions_max = 1024;
         slabThickness_min = 10e-3;
         slabThickness_max = 500e-3;
-        bandwidth_min = 1500;
-        bandwidth_max = 250e3;
+        transmitterBandwidth_min = 1500;
+        transmitterBandwidth_max = 250e3;
         partitionThickness_min = 0.2e-3;
         partitionThickness_max = 20e-3;
         RfPulseDuration_min = 20e-6;
@@ -152,10 +152,10 @@ classdef SoSprotocol < protocol
             
             validateResolution(obj)                      
             validateResolutionZ(obj)
-            
+            fprintf('Observation: Some parameters valmay have changed during validation, type: inputs, to see the new values \n')
             
         end
-        
+          
     end
     
 end

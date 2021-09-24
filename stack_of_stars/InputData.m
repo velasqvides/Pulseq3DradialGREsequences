@@ -18,7 +18,7 @@ inputs.nSpokes = 256;
 inputs.bandwidthPerPixel = 1667; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
-inputs.nDummyScans = 336;
+inputs.nDummyScans = 335;
 % 3. Spoling strategy 
 inputs.phaseDispersionReadout = 0;     % desired phase dispersion along readout;
 inputs.phaseDispersionZ = 0;           % desired phase dispersion along z;  
@@ -47,13 +47,13 @@ inputs.TE = 2.21e-3;                             % in seconds
 inputs.TR = 4.36e-3;                             % in seconds
 inputs.flipAngle = 5;                     % in degrees
 
-%% II. Check and save the input data.
-inputs.validateResolution
-inputs.validateResolutionZ
+%% II. Validate the parameters.
+inputs.validateProtocol
+% Optionally, get an idea of the necessary number of dummy scans 
 T1 = 1284e-3; % T1 for white matter at 7T
 error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
-% inputs.estimateNdummyScans(T1,error)
-clear T1 error;
+inputs.estimateNdummyScans(T1,error);
+% clear T1 error;
 
 
 
