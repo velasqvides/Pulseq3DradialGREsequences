@@ -77,7 +77,7 @@ classdef protocol < handle
         end
         
         function validateResolution(obj)
-            report = {sprintf('### Checking in-plane resolution ...\n');};
+            report = {sprintf('### Checking in-plane resolution ...\n')};
             
             % fix FOV
             if obj.FOV < obj.FOV_min
@@ -104,7 +104,7 @@ classdef protocol < handle
                 toPrint = sprintf('**nSamples =%i has to be changed to %i to keep the spatial resolution above the limit:%5.4f\n',nSamples_old, nSamples_new, obj.spatialResolution_max);
                 obj.nSamples = nSamples_new;            
             end
-            if ~isempty(toPrint)
+            if ~strcmp('',toPrint)
             report{end+1} = toPrint;
             end
             
@@ -123,7 +123,7 @@ classdef protocol < handle
             if obj.gradientAmplitude > obj.systemLimits.maxGrad % maxGrad in Hertz
                 BWpixel_new = floor( obj.systemLimits.maxGrad * round(obj.FOV,3) / obj.nSamples );
                 text1 = sprintf('**bandwidthPerPixel = %i was changed to %i',BWpixel_old, BWpixel_new);
-                text2 = sprintf('\n  to keep the maximum gradient amplitude below the limit:%6.3f mT/m\n',mr.convert(obj.systemLimits.maxGrad,'Hz/m','mT/m'));                
+                text2 = sprintf('\n   to keep the maximum gradient amplitude below the limit:%6.3f mT/m\n',mr.convert(obj.systemLimits.maxGrad,'Hz/m','mT/m'));                
                 toPrint = append(text1,text2);
                 obj.bandwidthPerPixel = BWpixel_new;            
             end
@@ -131,7 +131,10 @@ classdef protocol < handle
             report{end+1} = toPrint;
             end
             
-            report{end+1} = sprintf('...Done.\n\n');
+            if size(report,2) == 3
+                report{end+1} = sprintf('All resolution parameters accepted\n');
+            end
+            report{end+1} = sprintf('###...Done.\n\n');            
             fprintf([report{:}]);
         end
     end

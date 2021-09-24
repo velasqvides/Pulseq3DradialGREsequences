@@ -77,7 +77,7 @@ classdef protocol < handle
         end
         
         function validateResolution(obj)
-            report = {sprintf('### Checking in-plane resolution ...\n');};
+            report = {sprintf('### Checking in-plane resolution ...\n')};
             
             % fix FOV
             if obj.FOV < obj.FOV_min
@@ -104,7 +104,7 @@ classdef protocol < handle
                 toPrint = sprintf('**nSamples =%i has to be changed to %i to keep the spatial resolution above the limit:%5.4f\n',nSamples_old, nSamples_new, obj.spatialResolution_max);
                 obj.nSamples = nSamples_new;            
             end
-            if ~isempty(toPrint)
+            if ~strcmp(' ',toPrint)
             report{end+1} = toPrint;
             end
             
@@ -127,11 +127,14 @@ classdef protocol < handle
                 toPrint = append(text1,text2);
                 obj.bandwidthPerPixel = BWpixel_new;            
             end
-            if ~isempty(toPrint)
+            if ~strcmp(' ',toPrint)
             report{end+1} = toPrint;
             end
             
-            report{end+1} = sprintf('###...Done.\n\n');
+            if size(report,2) == 1
+                report{end+1} = sprintf('All in-plane resolution parameters accepted\n');
+            end
+            report{end+1} = sprintf('###...Done.\n\n');            
             fprintf([report{:}]);
         end
     end
