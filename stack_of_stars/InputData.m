@@ -9,12 +9,13 @@ clear variables
 %% I. data collection
 % 1. Resolution
 inputs = SoSprotocol(); 
-inputs.FOV = 2560e-3;            % in meters
+
+inputs.FOV = 1e-3;            % in meters
 inputs.slabThickness = 256e-3;  % in meters
-inputs.nSamples = 2560;  
-inputs.nPartitions = 256;        
-inputs.nSpokes = 1025;                       
-inputs.bandwidthPerPixel = 16678; % in Herz                  
+inputs.nSamples = 512;  
+inputs.nPartitions = 4;        
+inputs.nSpokes = 256;                       
+inputs.bandwidthPerPixel = 100000; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
 inputs.nDummyScans = 336;
@@ -30,7 +31,7 @@ inputs.partitionRotation = 'goldenAngle';   % 'aligned', 'linear', 'goldenAngle'
 inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
 inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
-inputs.RfPulseDuration = 400e-6;          % use 200e-6 for nonSelective, in seconds
+inputs.RfPulseDuration = 20e-6;          % use 200e-6 for nonSelective, in seconds
 inputs.RfPulseApodization = 0.5;          % 0: unapodized, 0.46: Haming, 0.5: Hanning
 inputs.timeBwProduct = 2;                 % dimensionless
 % 6. Main system limits
@@ -48,9 +49,10 @@ inputs.flipAngle = 5;                     % in degrees
 
 %% II. Check and save the input data.
 inputs.validateResolution
+% inputs.validateResolutionZ
 T1 = 1284e-3; % T1 for white matter at 7T
 error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
-inputs.estimateNdummyScans(T1,error)
+% inputs.estimateNdummyScans(T1,error)
 clear T1 error;
 
 
