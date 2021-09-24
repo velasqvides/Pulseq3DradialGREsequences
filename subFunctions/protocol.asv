@@ -48,7 +48,7 @@ classdef protocol < handle
             % when divided by 2, the result will still be multiple of the
             % gradient raster time
             gradRasterTime = obj.systemLimits.gradRasterTime;
-            readoutDuration = (2*gradRasterTime) * round( (1/obj.bandwidthPerPixel) / (2*gradRasterTime) );
+            readoutDuration = (2*gradRasterTime) * ceil( (1/obj.bandwidthPerPixel) / (2*gradRasterTime) );
         end
         
         function estimateNdummyScans(obj,T1,error)
@@ -61,57 +61,57 @@ classdef protocol < handle
             error = error * 100;
             
             if obj.nDummyScans ~= requieredDummyScans
-                fprintf('\n**For the current TR and flip angle, the Suggested # of dummy scans to have a signal within\n')
+                fprintf('**For the current TR and flip angle, the Suggested # of dummy scans to have a signal within\n')
                 fprintf('%4.2f%% of the steady-sate value is: %i. Current value: %i.\n\n',error, requieredDummyScans,obj.nDummyScans)
             end
         end
         
         function validateResolution(obj)
-            report = {};                     
-                      
+            report = {};
+            
             % fix FOV
             if obj.FOV < obj.FOV_min
-                report{end+1} = sprintf('\n**Current FOV =%6.3f is below lower limit %6.3f. FOV set to:%6.3f\n',obj.FOV, obj.FOV_min, obj.FOV_min);
+                report{end+1} = sprintf('**Current FOV =%6.3f is below lower limit %6.3f. FOV set to:%6.3f\n',obj.FOV, obj.FOV_min, obj.FOV_min);
                 obj.FOV = obj.FOV_min;
             elseif obj.FOV > obj.FOV_max
-                report{end+1} = sprintf('\n**Current FOV =%6.3f is above upper limit %6.3f. FOV set to:%6.3f\n',obj.FOV, obj.FOV_max, obj.FOV_max);
+                report{end+1} = sprintf('**Current FOV =%6.3f is above upper limit %6.3f. FOV set to:%6.3f\n',obj.FOV, obj.FOV_max, obj.FOV_max);
                 obj.FOV = obj.FOV_max;            
             end
                  
-            
             % fix nSamples
             toPrint = ' ';
             if obj.nSamples < obj.nSamples_min
-                toPrint = sprintf('\n**Current nSamples = %i is below lower limit %i. nSamples set to:%i\n',obj.nSamples, obj.nSamples_min, obj.nSamples_min);                               
+                toPrint = sprintf('**Current nSamples = %i is below lower limit %i. nSamples set to:%i\n',obj.nSamples, obj.nSamples_min, obj.nSamples_min);                               
                 obj.nSamples = obj.nSamples_min;
             elseif obj.nSamples > obj.nSamples_max
-                toPrint = sprintf('\n**Current nSamples =%i is above upper limit %i. nSamples set to:%i\n',obj.nSamples, obj.nSamples_max, obj.nSamples_max);                
+                toPrint = sprintf('**Current nSamples =%i is above upper limit %i. nSamples set to:%i\n',obj.nSamples, obj.nSamples_max, obj.nSamples_max);                
                 obj.nSamples = obj.nSamples_max;            
             end
-            % Further check and fix Nx to to be above maxSpatialResolution
+            % fix nSamples further to comply with the max spatialResolution
             if obj.FOV / obj.nSamples < obj.spatialResolution_max
                 nSamples_new = round(obj.FOV,3)/obj.spatialResolution_max;
-                toPrint = sprintf('\n**Current nSamples =%i has to be changed to %i to keep the spatial resolution above the limit:%5.4f\n',obj.nSamples, nSamples_new, obj.spatialResolution_max);
+                toPrint = sprintf('**Current nSamples =%i has to be changed to %i to keep the spatial resolution above the limit:%5.4f\n',obj.nSamples, nSamples_new, obj.spatialResolution_max);
                 obj.nSamples = nSamples_new;            
             end
             if ~isempty(toPrint)
             report{end+1} = toPrint;
             end
             
-            % Check or fix bandwidthPerPixel
+            % fix bandwidthPerPixel
             toPrint = ' ';
             if obj.bandwidthPerPixel < obj.bandwidthPerPixel_min
-                toPrint = sprintf('\n**Current bandwidthPerPixel =%6.3f is below lower limit %6.3f. bandwidthPerPixel set to:%6.3f\n',obj.bandwidthPerPixel, obj.bandwidthPerPixel_min, obj.bandwidthPerPixel_min);
+                toPrint = sprintf('**Current bandwidthPerPixel =%6.3f is below lower limit %6.3f. bandwidthPerPixel set to:%6.3f\n',obj.bandwidthPerPixel, obj.bandwidthPerPixel_min, obj.bandwidthPerPixel_min);
                 obj.bandwidthPerPixel = obj.bandwidthPerPixel_min;
             elseif obj.bandwidthPerPixel > obj.bandwidthPerPixel_max
-                toPrint = sprintf('\n**Current bandwidthPerPixel =%6.3f is above upper limit %6.3f. bandwidthPerPixel set to:%6.3f\n',obj.bandwidthPerPixel, obj.bandwidthPerPixel_max, obj.bandwidthPerPixel_max);
+                toPrint = sprintf('**Current bandwidthPerPixel =%6.3f is above upper limit %6.3f. bandwidthPerPixel set to:%6.3f\n',obj.bandwidthPerPixel, obj.bandwidthPerPixel_max, obj.bandwidthPerPixel_max);
                 obj.bandwidthPerPixel = obj.bandwidthPerPixel_max;            
             end
-            % Further check and fix bandwidthPerPixel for the GxAmplitude to be below
-            % maxGradientAmplitude
+            % fix the bandwidthPerPixel further to comply wit the max
+            % gradient amplitude
             if obj.nSamples * obj.bandwidthPerPixel / obj.FOV > obj.systemLimits.maxGrad % maxGrad in Hertz
+                bandwidthPerPixel_old = obj.bandwidthPerPixel;
                 BWpixel_new = floor( obj.systemLimits.maxGrad * round(obj.FOV,3) / obj.nSamples );% -1 to be usre we dont exceed the maxGrad limit
-                text1 = sprintf('\n**Current bandwidthPerPixel = %i has to be changed to %i',obj.bandwidthPerPixel, BWpixel_new);
+                text1 = sprintf('**Current bandwidthPerPixel = %i has to be changed to %i',bandwidthPerPixel_old, BWpixel_new);
                 text2 = sprintf('\n  to keep the maximum gradient amplitude below the limit:%6.3f mT/m\n',mr.convert(obj.systemLimits.maxGrad,'Hz/m','mT/m'));                
                 toPrint = append(text1,text2);
                 obj.bandwidthPerPixel = BWpixel_new;            

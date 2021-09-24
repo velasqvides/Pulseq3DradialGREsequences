@@ -11,13 +11,13 @@ clear variables
 inputs = SoSprotocol(); 
 inputs.FOV = 256e-3;            % in meters
 inputs.slabThickness = 256e-3;  % in meters
-inputs.nSamples = 6400;  
+inputs.nSamples = 256;  
 inputs.nPartitions = 256;        
 inputs.nSpokes = 1025;                       
-inputs.bandwidthPerPixel = 2000; % in Herz                  
+inputs.bandwidthPerPixel = 1667; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
-inputs.nDummyScans = 335;
+inputs.nDummyScans = 336;
 % 3. Spoling strategy 
 inputs.phaseDispersionReadout = 0;     % desired phase dispersion along readout;
 inputs.phaseDispersionZ = 0;           % desired phase dispersion along z;  
@@ -47,22 +47,11 @@ inputs.TR = 4.36e-3;                             % in seconds
 inputs.flipAngle = 5;                     % in degrees
 
 %% II. Check and save the input data.
-% 1. First, check that all input values makes sense regarding to:
-% data-type, format, range, cardinality, spelling and consistency.
-% validateInputs(inputs) % works only with versions R2019b and later.
-% 2. Validate resolution.
-% [inputs.Nx, inputs.FOV, inputs.bandwidthPerPixel] = validateResolution(inputs.Nx,inputs.FOV,inputs.bandwidthPerPixel,systemLimits);
-% [inputs.Nz, inputs.slabThickness, inputs.RfPulseDuration, inputs.timeBWProduct ] = validateResolutionZ(inputs,systemLimits);
-% 3. Validate TE and TR values.
-% [inputs.TE, inputs.TR ] = validateTEandTR(inputs, systemLimits); % further validation for TE and TR
-% 4. Get feedback about the estimated number of dummy scans based on current
-% TR, flip angle, and the next two parameters:
+inputs.validateResolution
 T1 = 1284e-3; % T1 for white matter at 7T
 error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
 inputs.estimateNdummyScans(T1,error)
 clear T1 error;
-inputs.validateResolution
 
-% 5. The two struct final variables will be saved into parameters.mat
-% parameter.mat needs to be loaded into the main script to create the sequence
-% save('parametersSoS.mat','inputs','systemLimits');
+
+
