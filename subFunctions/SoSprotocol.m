@@ -1,4 +1,4 @@
-classdef SoSprotocol < protocol
+classdef SOSprotocol < protocol
     %UNTITLED3 Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -32,6 +32,7 @@ classdef SoSprotocol < protocol
         partitionThickness
         transmitterBandwidth
         slabGradientAmplitude
+        deltaKz
     end
     
     methods
@@ -46,6 +47,10 @@ classdef SoSprotocol < protocol
         
         function slabGradientAmplitude = get.slabGradientAmplitude(obj)
             slabGradientAmplitude = obj.timeBwProduct / (obj.slabThickness * obj.RfPulseDuration);
+        end
+        
+        function deltaKz = get.deltaKz(obj)
+            deltaKz = 1/obj.slabThickness;
         end
         
         function validateResolutionZ(obj)
@@ -156,10 +161,10 @@ classdef SoSprotocol < protocol
             
         end
           
-        function validateTEandTR(obj)
-           
-            kernel =  
-        end
+%         function validateTEandTR(obj)
+%            
+%             kernel =  
+%         end
     end
     
 end

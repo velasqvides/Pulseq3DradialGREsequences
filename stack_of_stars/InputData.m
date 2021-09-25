@@ -8,7 +8,7 @@
 clear variables
 %% I. data collection
 % 1. Resolution
-inputs = SoSprotocol(); 
+inputs = SOSprotocol(); 
 
 inputs.FOV = 256e-3;            % in meters
 inputs.slabThickness = 256e-3;  % in meters
