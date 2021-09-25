@@ -22,13 +22,10 @@ classdef SOSkernel < kernel
             nPartitions = obj.protocol.nPartitions;
             systemLimits = obj.protocol.systemLimits;
             deltaKz = obj.protocol.deltaKz;
+            GzPartition = createGzPartition(obj);
             
-            GzPartitionAreas = ((0:nPartitions-1) - nPartitions/2) * deltaKz; % areas go from bottom to top
-            % get a dummy gradient with the maximum area of all GzPartitions
-            dummyGradient = mr.makeTrapezoid('z',systemLimits,'Area',max(abs(GzPartitionAreas)));
-            % Use the duration of the dummy gradient for all the GzPartitions to keep
-            % the TE and TR constant.
-            fixedGradientDuration = mr.calcDuration(dummyGradient);
+            GzPartitionAreas = ((0:nPartitions-1) - nPartitions/2) * deltaKz; % areas go from bottom to top            
+            fixedGradientDuration = mr.calcDuration(GzPartition);  
             
             % make partition encoding gradients
             GzPartitionsCell = cell(1,nPartitions);

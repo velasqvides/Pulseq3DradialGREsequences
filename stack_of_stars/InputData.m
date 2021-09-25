@@ -11,9 +11,9 @@ clear variables
 inputs = SOSprotocol(); 
 
 inputs.FOV = 256e-3;            % in meters
-inputs.slabThickness = 256e-3;  % in meters
+inputs.slabThickness = 10e-3;  % in meters
 inputs.nSamples = 256;  
-inputs.nPartitions = 256;        
+inputs.nPartitions = 1024;        
 inputs.nSpokes = 256;                       
 inputs.bandwidthPerPixel = 1667; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
