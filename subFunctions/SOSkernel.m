@@ -27,7 +27,7 @@ classdef SOSkernel < kernel
             
         end
         
-        function GzRephPlusPartitionsCell = createGzRephAndPartitions(obj)                        
+        function GzRephPlusPartitionsCell = createGzRephAndPartitions(obj)
             nPartitions = obj.protocol.nPartitions;
             systemLimits = obj.protocol.systemLimits;
             deltaKz = obj.protocol.deltaKz;
@@ -54,6 +54,56 @@ classdef SOSkernel < kernel
             
         end
         
+        function GzCombinedCell = combineGzAndGzRephPlusPartitions(obj)
+            nPartitions = obj.protocol.nPartitions;
+            systemLimits = obj.protocol.systemLimits;
+            [~, Gz, ~] = obj.createSlabSelectionEvents(obj);
+            GzRephPlusPartitionsCell = createGzRephAndPartitions(obj);
+            
+            GzCombinedCell = cell(1,nPartitions);
+            for iz=1:nPartitions
+                GzCombinedCell{iz} = mr.addGradients({Gz, GzRephPlusPartitionsCell{iz}}, 'system', systemLimits);
+            end
+        end
+        
+        function GzSpoilersCell = createGzSpoilers(obj)
+            phaseDispersionZ = obj.protocol.phaseDispersionZ;
+            nPartitions = obj.protocol.nPartitions;
+            systemLimits = obj.protocol.systemLimits;
+            partitionThickness = obj.protocol.partitionThickness;
+            GzPartitionsCell = createGzPartitions(obj);
+            
+            % GzSpoiler
+            GzSpoilersCell = cell(1,nPartitions);
+            if phaseDispersionZ == 0 % just refocuse the phase encoding gradient in Z direction
+                duration = mr.calcDuration(GzPartitionsCell{1});
+                for iz = 1:nPartitions
+                    GzSpoilersCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',-GzPartitionsCell{iz}.area,'Duration',duration);
+                end
+            else
+                % in case the GzSpoiler area has to change, use the same duration to keep same TR
+                AreaSpoilingZ = phaseDispersionZ / (2 * pi * partitionThickness);
+                dummyGradient = mr.makeTrapezoid('z',systemLimits,'Area',abs(AreaSpoilingZ));
+                fixedDurationGradient = mr.calcDuration(dummyGradient); % same duration every step
+                
+                for iZ=1:nPartitions
+                    % GzPartition already add some phase dispersion to the spins
+                    dispersionDueToGzPartition = 2 * pi * partitionThickness * abs(GzPartitionsCell{iz}.area);
+                    % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
+                    dispersionNeededZ = phaseDispersionZ - dispersionDueToGzPartition;
+                    AreaSpoilingZ = dispersionNeededZ / (2 * pi * partitionThickness);
+                    if GzPartitionsCell{iz}.area < 0
+                        
+                        GzSpoilersCell{iz} = mr.makeTrapezoid('z','Area',-AreaSpoilingZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                    else
+                        GzSpoilersCell{iz} = mr.makeTrapezoid('z','Area',AreaSpoilingZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                    end
+                end
+            end
+        end
+        
     end
+    
+
 end
 
