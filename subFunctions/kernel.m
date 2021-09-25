@@ -27,7 +27,7 @@ classdef kernel < handle
                         'timeBwProduct',timeBwProduct,'system',systemLimits);
                     
                 case 'nonSelective'
-                    RF = mr.makeBlockPulse(flipAngle*pi/180,sys,'Duration',RfPulseDuration);
+                    RF = mr.makeBlockPulse(flipAngle*pi/180,systemLimits,'Duration',RfPulseDuration);
                     Gz = []; GzReph = [];
             end
             

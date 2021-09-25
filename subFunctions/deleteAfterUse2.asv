@@ -1,8 +1,7 @@
 
 a=SOSkernel(inputs);
 G=a.createMaxGzPartition;
-dispersionDueToGzPartition_max = 2 * pi * a.protocol.partitionThickness * abs(G.area);
-[Gspo, dispersionPerTR] = a.createGzSpoilers;
+dispersionDueToGzPartition_max = 2 * pi * obj.protocolpartitionThickness * abs(GzPartitionMax.area);
 
 % Gp = a.createAllGzPartitions;
 % Grp=a.createGzRephAndPartitions;
