@@ -11,9 +11,9 @@ clear variables
 inputs = SOSprotocol(); 
 
 inputs.FOV = 256e-3;            % in meters
-inputs.slabThickness = 10e-3;  % in meters
+inputs.slabThickness = 256e-3;  % in meters
 inputs.nSamples = 256;  
-inputs.nPartitions = 1024;        
+inputs.nPartitions = 256;        
 inputs.nSpokes = 256;                       
 inputs.bandwidthPerPixel = 1667; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
@@ -21,7 +21,7 @@ inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling
 inputs.nDummyScans = 335;
 % 3. Spoling strategy 
 inputs.phaseDispersionReadout = 0;     % desired phase dispersion along readout;
-inputs.phaseDispersionZ = 2*pi;           % desired phase dispersion along z;  
+inputs.phaseDispersionZ = 0.1*pi;           % desired phase dispersion along z;  
 inputs.RfSpoilingIncrement = 117;           % in degrees
 % 4. Angular ordering
 inputs.angularOrdering = 'goldenAngle';     % 'uniform', 'uniformAlternating', 'goldeAngle'

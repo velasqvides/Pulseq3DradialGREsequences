@@ -98,14 +98,24 @@ classdef SOSkernel < kernel
                 for iZ=1:nPartitions
                     % GzPartition already add some phase dispersion to the spins
                     dispersionDueToGzPartition = 2 * pi * partitionThickness * abs(GzPartitionsCell{iZ}.area);
+                    
                     % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
-                    dispersionNeededZ = phaseDispersionZ - dispersionDueToGzPartition;
-                    AreaSpoilingZ = dispersionNeededZ / (2 * pi * partitionThickness);
-                    if GzPartitionsCell{iZ}.area < 0
-                        
-                        GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',-AreaSpoilingZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                    dispersionNeededZ = abs(phaseDispersionZ - dispersionDueToGzPartition);
+                    AreaSpoilingNeededZ = dispersionNeededZ / (2 * pi * partitionThickness);
+                    if dispersionDueToGzPartition < phaseDispersionZ
+                        if GzPartitionsCell{iZ}.area < 0
+                            
+                            GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        else
+                            GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        end
                     else
-                        GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',AreaSpoilingZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        if GzPartitionsCell{iZ}.area < 0
+                            
+                            GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        else
+                            GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        end
                     end
                 end
             end
