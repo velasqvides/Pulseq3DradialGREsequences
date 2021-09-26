@@ -32,6 +32,7 @@ classdef protocol < handle
         bandwidthPerPixel_max = 2000;
         spatialResolution_max = 0.2e-3;
         TR_max = 100e-3
+        ADCrasterTime = 0.1e-6; % ADC raster time for Siemens machines as I understand
     end
     
     properties(Dependent,Hidden)
@@ -67,9 +68,8 @@ classdef protocol < handle
             realBandwidthPerPixel = round(1/obj.readoutDuration);
         end
         
-        function dwellTime = get.dwellTime(obj)
-            ADCrasterTime = 0.1e-6; % ADC raster time for Siemens machines as I understand
-           dwellTime =  ADCrasterTime * round(obj.readoutDuration / (obj.nSamples * obj.readoutOversampling)/ADCrasterTime);
+        function dwellTime = get.dwellTime(obj)            
+           dwellTime =  obj.ADCrasterTime * round( obj.readoutDuration / (obj.nSamples * obj.readoutOversampling) / obj.ADCrasterTime );
         end
         
         function estimateNdummyScans(obj,T1,error)

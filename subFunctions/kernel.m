@@ -33,15 +33,17 @@ classdef kernel < handle
             
         end
         
-        function [Gx, GxPre, ADC] = createReadoutEvents(obj)
+        function [Gx, GxPre, ADC, ADC2] = createReadoutEvents(obj)
             nSamples = obj.protocol.nSamples;
             deltaKx = obj.protocol.deltaKx;
             systemLimits = obj.protocol.systemLimits;
             readoutOversampling = obj.protocol.readoutOversampling;
             readoutDuration = obj.protocol.readoutDuration;
+            dwellTime = obj.protocol.dwellTime;
             
             Gx = mr.makeTrapezoid('x','FlatArea',nSamples * deltaKx,'FlatTime',readoutDuration,'system',systemLimits);
             ADC = mr.makeAdc(nSamples * readoutOversampling,'Duration',readoutDuration,'Delay',Gx.riseTime,'system',systemLimits);
+            ADC2 = mr.makeAdc(nSamples * readoutOversampling,'Dwell',dwellTime,'Delay',Gx.riseTime,'system',systemLimits);
             GxPre = mr.makeTrapezoid('x','Area',-Gx.flatArea/nSamples*floor(nSamples/2)-(Gx.area-Gx.flatArea)/2,'system',systemLimits);
         end
         

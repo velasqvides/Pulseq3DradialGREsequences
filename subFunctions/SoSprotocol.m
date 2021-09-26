@@ -113,7 +113,8 @@ classdef SOSprotocol < protocol
                 toPrintRf = sprintf('**RF pulse duration = %3.1f us is above upper limit %3.1f us. RfPulseDuration set to: %3.1f us\n',RfPulseDuration_old*1e6, obj.RfPulseDuration_max*1e6, obj.RfPulseDuration_max*1e6);
                 obj.RfPulseDuration = obj.RfPulseDuration_max;            
             end
-            
+            % round the Rf pulse duration to the RF raster time (currently 1e-6 seconds)
+            obj.RfPulseDuration = obj.systemLimits.rfRasterTime* round(obj.RfPulseDuration/obj.systemLimits.rfRasterTime);
                         
             % fix the timeBwProduct further for the transmitterBandwidth to be between the limits
             if obj.transmitterBandwidth < obj.transmitterBandwidth_min

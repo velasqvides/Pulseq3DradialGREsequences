@@ -6,10 +6,10 @@
 % command window in case that some parameter is modified. 
 %  
 clear variables
+% create class SOSprotocol
+inputs = SOSprotocol(); 
 %% I. data collection
 % 1. Resolution
-inputs = SOSprotocol(); 
-
 inputs.FOV = 256e-3;            % in meters
 inputs.slabThickness = 256e-3;  % in meters
 inputs.nSamples = 256;  
@@ -21,7 +21,7 @@ inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling
 inputs.nDummyScans = 335;
 % 3. Spoling strategy 
 inputs.phaseDispersionReadout = 0;     % desired phase dispersion along readout;
-inputs.phaseDispersionZ = 0.3 * pi;           % desired phase dispersion along z;  
+inputs.phaseDispersionZ = 2 * pi;           % desired phase dispersion along z;  
 inputs.RfSpoilingIncrement = 117;           % in degrees
 % 4. Angular ordering
 inputs.angularOrdering = 'goldenAngle';     % 'uniform', 'uniformAlternating', 'goldeAngle'
