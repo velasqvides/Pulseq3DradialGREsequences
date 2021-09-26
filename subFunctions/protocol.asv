@@ -68,8 +68,7 @@ classdef protocol < handle
         end
         
         function dwellTime = get.dwellTime(obj)
-            ADCrasterTime = 0.1e-6; % ADC raster time for Siemens machines as I understand
-           dwellTime =  ADCrasterTime * round(obj.readoutDuration / (obj.nSamples * obj.readoutOversampling)/ADCrasterTime);
+           dwellTime =  (obj.readoutDuration)/obj.nSamples;
         end
         
         function estimateNdummyScans(obj,T1,error)

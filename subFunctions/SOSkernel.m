@@ -133,7 +133,9 @@ classdef SOSkernel < kernel
                     % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
                     dispersionNeededZ = abs(phaseDispersionZ - dispersionDueToThisPartition);
                     AreaSpoilingNeededZ = dispersionNeededZ / (2 * pi * partitionThickness);
-                    if (GzPartitionsCell{ii}.area < 0 && (dispersionDueToThisPartition >= phaseDispersionZ)) || (GzPartitionsCell{ii}.area > 0 && (dispersionDueToThisPartition <= phaseDispersionZ))
+                    haveSameSign1 = (GzPartitionsCell{ii}.area < 0 && (dispersionDueToThisPartition >= phaseDispersionZ));
+                    haveSameSign2 = (GzPartitionsCell{ii}.area > 0 && (dispersionDueToThisPartition <= phaseDispersionZ));
+                    if (haveSameSign1 || haveSameSign2)
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     else
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);

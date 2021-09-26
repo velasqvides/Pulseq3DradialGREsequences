@@ -39,6 +39,7 @@ classdef kernel < handle
             systemLimits = obj.protocol.systemLimits;
             readoutOversampling = obj.protocol.readoutOversampling;
             readoutDuration = obj.protocol.readoutDuration;
+            
             Gx = mr.makeTrapezoid('x','FlatArea',nSamples * deltaKx,'FlatTime',readoutDuration,'system',systemLimits);
             ADC = mr.makeAdc(nSamples * readoutOversampling,'Duration',readoutDuration,'Delay',Gx.riseTime,'system',systemLimits);
             GxPre = mr.makeTrapezoid('x','Area',-Gx.flatArea/nSamples*floor(nSamples/2)-(Gx.area-Gx.flatArea)/2,'system',systemLimits);
