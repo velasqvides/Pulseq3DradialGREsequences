@@ -21,7 +21,7 @@ inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling
 inputs.nDummyScans = 335;
 % 3. Spoling strategy 
 inputs.phaseDispersionReadout = 0;     % desired phase dispersion along readout;
-inputs.phaseDispersionZ = 0.4 * pi;           % desired phase dispersion along z;  
+inputs.phaseDispersionZ = 2.1 * pi;           % desired phase dispersion along z;  
 inputs.RfSpoilingIncrement = 117;           % in degrees
 % 4. Angular ordering
 inputs.angularOrdering = 'goldenAngle';     % 'uniform', 'uniformAlternating', 'goldeAngle'
