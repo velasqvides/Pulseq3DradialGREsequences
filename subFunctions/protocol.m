@@ -23,7 +23,7 @@ classdef protocol < handle
         systemLimits (1,1) struct
         end
     
-    properties(Constant,Hidden)
+    properties(Access = private, Constant)
         nSamples_min = 64
         nSamples_max = 1024;
         FOV_min = 10e-3
@@ -39,6 +39,7 @@ classdef protocol < handle
         readoutDuration
         spatialResolution
         gradientAmplitude
+        realBandwidthPerPixel
     end
     
     methods
@@ -59,6 +60,10 @@ classdef protocol < handle
         
         function gradientAmplitude = get.gradientAmplitude(obj)
             gradientAmplitude = obj.nSamples * obj.bandwidthPerPixel / obj.FOV;
+        end
+        
+        function realBandwidthPerPixel = get.realBandwidthPerPixel(obj)
+            realBandwidthPerPixel = round(1/obj.readoutDuration);
         end
         
         function estimateNdummyScans(obj,T1,error)
@@ -120,15 +125,14 @@ classdef protocol < handle
                 toPrint = sprintf('**bandwidthPerPixel =%6.3f is above upper limit %6.3f. bandwidthPerPixel set to:%6.3f\n',BWpixel_old, obj.bandwidthPerPixel_max, obj.bandwidthPerPixel_max);
                 obj.bandwidthPerPixel = obj.bandwidthPerPixel_max;            
             end
-            % fix bandwidthPerPixel further to comply wit the max
-            % gradient amplitude
+            % fix bandwidthPerPixel further to comply wit the max gradient amplitude            
             if obj.gradientAmplitude > obj.systemLimits.maxGrad % maxGrad in Hertz
                 BWpixel_new = floor( obj.systemLimits.maxGrad * round(obj.FOV,3) / obj.nSamples );
                 text1 = sprintf('**bandwidthPerPixel = %i was changed to %i',BWpixel_old, BWpixel_new);
                 text2 = sprintf('\n   to keep the maximum gradient amplitude below the limit:%6.3f mT/m\n',mr.convert(obj.systemLimits.maxGrad,'Hz/m','mT/m'));                
                 toPrint = append(text1,text2);
                 obj.bandwidthPerPixel = BWpixel_new;            
-            end
+            end   
             if ~strcmp(' ',toPrint)
             report{end+1} = toPrint;
             end

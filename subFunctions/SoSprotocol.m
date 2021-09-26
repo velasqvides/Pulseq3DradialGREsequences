@@ -13,7 +13,7 @@ classdef SOSprotocol < protocol
         viewOrder string {mustBeMember(viewOrder,{'partitionsInInnerLoop','partitionsInOuterLoop'})} ='partitionsInInnerLoop'
     end
     
-    properties(Constant,Hidden)
+    properties(Access = private, Constant)
         nPartitions_min = 5;
         nPartitions_max = 1024;
         slabThickness_min = 10e-3;
