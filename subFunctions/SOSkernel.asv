@@ -128,9 +128,9 @@ classdef SOSkernel < kernel
                     % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
                     dispersionNeededZ = abs(phaseDispersionZ - dispersionDueToGzPartition);
                     AreaSpoilingNeededZ = dispersionNeededZ / (2 * pi * partitionThickness);
-                    if GzPartitionsCell{ii}.area < 0
+                    if (GzPartitionsCell{ii}.area < 0 && (dispersionDueToGzPartition >= dispersionNeededZ)) || (GzPartitionsCell{ii}.area > 0 && (dispersionDueToGzPartition <= dispersionNeededZ))
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
-                    else
+                    elseif (GzPartitionsCell{ii}.area <= 0 && (dispersionDueToGzPartition < dispersionNeededZ)) || (GzPartitionsCell{ii}.area >= 0 && (dispersionDueToGzPartition > dispersionNeededZ))
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{ii}.area + GzSpoilersCell{ii}.area;
@@ -138,7 +138,7 @@ classdef SOSkernel < kernel
                 end
             elseif phaseDispersionZ < dispersionDueToGzPartition_max/2
                 % use the same duration to keep same TR
-                AreaSpoilingZ_max = phaseDispersionZ / (2 * pi * partitionThickness);
+                AreaSpoilingZ_max = abs(phaseDispersionZ-dispersionDueToGzPartition_max) / (2 * pi * partitionThickness);
                 dummyGradient = mr.makeTrapezoid('z',systemLimits,'Area',abs(AreaSpoilingZ_max));
                 fixedDurationGradient = mr.calcDuration(dummyGradient);
                 
