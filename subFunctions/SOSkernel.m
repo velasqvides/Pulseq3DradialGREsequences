@@ -6,8 +6,7 @@ classdef SOSkernel < kernel
         Property1
     end
     
-    methods
-        
+    methods        
         function GzPartitionMax = createGzPartitionMax(obj)
             nPartitions = obj.protocol.nPartitions;
             systemLimits = obj.protocol.systemLimits;
@@ -74,7 +73,7 @@ classdef SOSkernel < kernel
             end
         end
         
-        function [GzSpoilersCell, dispersionPerTR] = createGzSpoilers(obj)
+        function [GzSpoilersCell, dispersionsPerTR] = createGzSpoilers(obj)
             
             phaseDispersionZ = obj.protocol.phaseDispersionZ;
             nPartitions = obj.protocol.nPartitions;
@@ -86,14 +85,14 @@ classdef SOSkernel < kernel
             dispersionDueToGzPartitionMax = obj.calculatePhaseDispersion(abs(GzPartitionMax.area), partitionThickness);
             
             GzSpoilersCell = cell(1,nPartitions);
-            dispersionPerTR = zeros(1,nPartitions);
+            dispersionsPerTR = zeros(1,nPartitions);
             
             if phaseDispersionZ == 0 % just refocuse the phase encoding gradient in Z direction
                 duration = mr.calcDuration(GzPartitionMax);
                 for iz = 1:nPartitions
                     GzSpoilersCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',-GzPartitionsCell{iz}.area,'Duration',duration);
                     areaTotal = GzPartitionsCell{iz}.area + GzSpoilersCell{iz}.area;
-                    dispersionPerTR(iz) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
+                    dispersionsPerTR(iz) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
                 
             elseif phaseDispersionZ >= dispersionDueToGzPartitionMax
@@ -113,7 +112,7 @@ classdef SOSkernel < kernel
                         GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{iZ}.area + GzSpoilersCell{iZ}.area;
-                    dispersionPerTR(iZ) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
+                    dispersionsPerTR(iZ) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
                 
             else
@@ -141,10 +140,11 @@ classdef SOSkernel < kernel
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{ii}.area + GzSpoilersCell{ii}.area;
-                    dispersionPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);                    
+                    dispersionsPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);                    
                 end
             end
         end
+        
     end
     
 end

@@ -42,17 +42,38 @@ classdef kernel < handle
             readoutGradientAmplitude = obj.protocol.readoutGradientAmplitude;
             readoutGradientFlatTime = obj.protocol.readoutGradientFlatTime;
             
-            Gx = mr.makeTrapezoid('x','Amplitude',readoutGradientAmplitude,'FlatTime',readoutGradientFlatTime,'system',systemLimits);
+            Gx = mr.makeTrapezoid('x','Amplitude',readoutGradientAmplitude,'FlatTime',readoutGradientFlatTime,'system',systemLimits);            
+            GxPreArea = -(nSamples * deltaKx)/nSamples*floor(nSamples/2) - (Gx.riseTime*Gx.amplitude)/2;
+            GxPre = mr.makeTrapezoid('x','Area',GxPreArea,'system',systemLimits);
             ADC = mr.makeAdc(nSamples * readoutOversampling,'Dwell',dwellTime,'Delay',Gx.riseTime,'system',systemLimits);
             %             Gx = mr.makeTrapezoid('x','FlatArea',nSamples * deltaKx,'FlatTime',readoutDuration,'system',systemLimits);
             %             ADC = mr.makeAdc(nSamples * readoutOversampling,'Duration',readoutDuration,'Delay',Gx.riseTime,'system',systemLimits);
-            GxPre = mr.makeTrapezoid('x','Area',-(nSamples * deltaKx)/nSamples*floor(nSamples/2)-(Gx.riseTime*Gx.amplitude)/2,'system',systemLimits);
+        end
+        function [GxPlusSpoiler,dispersionPerTR] = createGxPlusSpoiler(obj)
+            [Gx, GxPre, ~] = createReadoutEvents(obj);
+            phaseDispersionReadout = obj.protocol.phaseDispersionReadout;
+            systemLimits = obj.protocol.systemLimits;             
+            spatialResolution = obj.protocol.spatialResolution;
+            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
+            
+            areaGxAfterTE = Gx.area - abs(GxPre.area);
+            inherentDispersionAfterTE = obj.calculatePhaseDispersion(areaGxAfterTE,obj.protocol.spatialResolution);
+            if phaseDispersionReadout <= inherentDispersionAfterTE
+               GxPlusSpoiler = Gx; % add no extra area
+            else               
+               areaSpoilingX = phaseDispersionReadout / (2 * pi * spatialResolution);
+               extraAreaNeeded = areaSpoilingX - areaGxAfterTE;
+               extraFlatTimeNeeded = gradRasterTime * round((extraAreaNeeded / Gx.amplitude)/ gradRasterTime);
+               GxPlusSpoiler = mr.makeTrapezoid('x','amplitude',Gx.amplitude,'FlatTime',Gx.flatTime + extraFlatTimeNeeded,'system',systemLimits);                                
+            end
+            dispersionPerTR = obj.calculatePhaseDispersion(GxPlusSpoiler.area-abs(GxPre.area), obj.protocol.spatialResolution);
         end
     end
     
+    
     methods(Static)
-       function phaseDispersion = calculatePhaseDispersion(SpoilerArea, voxelDimension)
-           phaseDispersion = 2 * pi * voxelDimension * SpoilerArea;
+       function phaseDispersion = calculatePhaseDispersion(SpoilerArea, dimensionAlongSpoiler)
+           phaseDispersion = 2 * pi * dimensionAlongSpoiler * SpoilerArea;
        end
    end
     

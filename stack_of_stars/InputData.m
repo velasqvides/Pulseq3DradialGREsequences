@@ -20,7 +20,7 @@ inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling
 % 2. Approach to steady state
 inputs.nDummyScans = 335;
 % 3. Spoling strategy 
-inputs.phaseDispersionReadout = 0;     % desired phase dispersion along readout;
+inputs.phaseDispersionReadout = 2 * pi;     % desired phase dispersion along readout;
 inputs.phaseDispersionZ = 2 * pi;           % desired phase dispersion along z;  
 inputs.RfSpoilingIncrement = 117;           % in degrees
 % 4. Angular ordering

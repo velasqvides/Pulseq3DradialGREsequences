@@ -1,11 +1,7 @@
 function sequenceEvents = createSequenceEvents(inputs, sys)
 
   
-%% Create readout gradients and ADC events
-deltaK = 1 / FOV;
-Gx = mr.makeTrapezoid('x','FlatArea',Nx * deltaK,'FlatTime',readoutDuration,'system',sys);
-ADC = mr.makeAdc(Nx * readoutOversampling,'Duration',readoutDuration,'Delay',Gx.riseTime,'system',sys);
-GxPre = mr.makeTrapezoid('x','Area',-Gx.flatArea/Nx*floor(Nx/2)-(Gx.area-Gx.flatArea)/2,'system',sys);
+
 
 
   

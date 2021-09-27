@@ -6,8 +6,7 @@ classdef SOSkernel < kernel
         Property1
     end
     
-    methods
-        
+    methods        
         function GzPartitionMax = createGzPartitionMax(obj)
             nPartitions = obj.protocol.nPartitions;
             systemLimits = obj.protocol.systemLimits;
@@ -74,7 +73,7 @@ classdef SOSkernel < kernel
             end
         end
         
-        function [GzSpoilersCell, dispersionPerTR] = createGzSpoilers(obj)
+        function [GzSpoilersCell, dispersionsPerTR] = createGzSpoilers(obj)
             
             phaseDispersionZ = obj.protocol.phaseDispersionZ;
             nPartitions = obj.protocol.nPartitions;
@@ -84,27 +83,26 @@ classdef SOSkernel < kernel
             GzPartitionsCell = createAllGzPartitions(obj);
             GzPartitionMax = createGzPartitionMax(obj);
             dispersionDueToGzPartitionMax = obj.calculatePhaseDispersion(abs(GzPartitionMax.area), partitionThickness);
-                        
+            
             GzSpoilersCell = cell(1,nPartitions);
-            dispersionPerTR = zeros(1,nPartitions);
+            dispersionsPerTR = zeros(1,nPartitions);
             
             if phaseDispersionZ == 0 % just refocuse the phase encoding gradient in Z direction
                 duration = mr.calcDuration(GzPartitionMax);
                 for iz = 1:nPartitions
                     GzSpoilersCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',-GzPartitionsCell{iz}.area,'Duration',duration);
                     areaTotal = GzPartitionsCell{iz}.area + GzSpoilersCell{iz}.area;
-                    dispersionPerTR(iz) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);                    
+                    dispersionsPerTR(iz) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
                 
             elseif phaseDispersionZ >= dispersionDueToGzPartitionMax
                 % use the same duration to keep same TR
                 AreaSpoilingZ_max = phaseDispersionZ / (2 * pi * partitionThickness);
                 dummyGradient = mr.makeTrapezoid('z',systemLimits,'Area',abs(AreaSpoilingZ_max));
-                fixedDurationGradient = mr.calcDuration(dummyGradient);                
+                fixedDurationGradient = mr.calcDuration(dummyGradient);
                 for iZ=1:nPartitions
                     % GzPartition already add some phase dispersion to the spins
                     dispersionDueToThisPartition = obj.calculatePhaseDispersion(abs(GzPartitionsCell{iZ}.area), partitionThickness);
-                    dispersionDueToThisPartition = 2 * pi * partitionThickness * abs(GzPartitionsCell{iZ}.area);
                     % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
                     dispersionNeededZ = abs(phaseDispersionZ - dispersionDueToThisPartition);
                     AreaSpoilingNeededZ = dispersionNeededZ / (2 * pi * partitionThickness);
@@ -114,7 +112,7 @@ classdef SOSkernel < kernel
                         GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{iZ}.area + GzSpoilersCell{iZ}.area;
-                    dispersionPerTR(iZ) = 2 * pi * partitionThickness * areaTotal;
+                    dispersionsPerTR(iZ) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
                 
             else
@@ -130,7 +128,7 @@ classdef SOSkernel < kernel
                 end
                 for ii=1:nPartitions
                     % GzPartition already add some phase dispersion to the spins
-                    dispersionDueToThisPartition = 2 * pi * partitionThickness * abs(GzPartitionsCell{ii}.area);
+                    dispersionDueToThisPartition = obj.calculatePhaseDispersion(abs(GzPartitionsCell{ii}.area), partitionThickness);
                     % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
                     dispersionNeededZ = abs(phaseDispersionZ - dispersionDueToThisPartition);
                     AreaSpoilingNeededZ = dispersionNeededZ / (2 * pi * partitionThickness);
@@ -142,9 +140,31 @@ classdef SOSkernel < kernel
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{ii}.area + GzSpoilersCell{ii}.area;
-                    dispersionPerTR(ii) = 2 * pi * partitionThickness * areaTotal;
+                    dispersionsPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);                    
                 end
             end
+        end
+        
+        function [GxPlusSpoiler,dispersionPerTR] = createGxPlusSpoiler(obj)
+            [Gx, GxPre, ~] = createReadoutEvents(obj);
+            phaseDispersionReadout = obj.protocol.phaseDispersionReadout;
+            systemLimits = obj.protocol.systemLimits;
+            nSamples = obj.protocol.nSamples;
+            deltaKx = obj.protocol.deltaKx; 
+            spatialResolution = obj.protocol.spatialResolution;
+            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
+            
+            areaGxAfterTE = Gx.area - abs(GxPre.area);
+            inherentDispersionAfterTE = obj.calculatePhaseDispersion(areaGxAfterTE,obj.protocol.spatialResolution);
+            if phaseDispersionReadout <= inherentDispersionAfterTE
+               GxPlusSpoiler = Gx; % add no extra area
+            else               
+               areaSpoilingX = phaseDispersionReadout / (2 * pi * spatialResolution);
+               extraAreaNeeded = areaSpoilingX - areaGxAfterTE;
+               extraFlatTimeNeeded = gradRasterTime * round((extraAreaNeeded / Gx.amplitude)/ gradRasterTime);
+               GxPlusSpoiler = mr.makeTrapezoid('x','amplitude',Gx.amplitude,'FlatTime',Gx.flatTime + extraFlatTimeNeeded,'system',systemLimits);                                
+            end
+            dispersionPerTR = obj.calculatePhaseDispersion(GxPlusSpoiler.area-abs(GxPre.area), a.protocol.spatialResolution);
         end
     end
     
