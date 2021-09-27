@@ -1,9 +1,0 @@
-
-a=SOSkernel(inputs);
-G=a.createMaxGzPartition;
-dispersionDueToGzPartition_max = 2 * pi * obj.protocolpartitionThickness * abs(GzPartitionMax.area);
-
-% Gp = a.createAllGzPartitions;
-% Grp=a.createGzRephAndPartitions;
-% [~, ~, GzReph] = a.createSlabSelectionEvents;
-% spoiler= a.createGzSpoilers;
