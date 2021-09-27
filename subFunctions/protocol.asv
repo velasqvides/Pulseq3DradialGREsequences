@@ -6,7 +6,7 @@ classdef protocol < handle
         FOV (1,1) double {mustBeNumeric, mustBePositive}=256e-3
         nSamples (1,1) {mustBeNumeric, mustBeInteger, mustBePositive}=256
         nSpokes (1,1) {mustBeNumeric, mustBeInteger, mustBePositive}=256
-        bandwidthPerPixel (1,1) double {mustBeNumeric, mustBePositive}=1667
+        bandwidthPerPixel (1,1) double {mustBeNumeric, mustBeInteger, mustBePositive}=1667
         readoutOversampling (1,1) {mustBeMember(readoutOversampling, [1, 2])}=2
         nDummyScans (1,1) {mustBeNumeric, mustBeInteger, mustBeNonnegative}=468
         phaseDispersionReadout (1,1) double {mustBeNumeric, mustBeNonnegative}=2*pi
@@ -32,15 +32,17 @@ classdef protocol < handle
         bandwidthPerPixel_max = 2000;
         spatialResolution_max = 0.2e-3;
         TR_max = 100e-3
+        ADCrasterTime = 0.1e-6; % ADC raster time for Siemens machines as I understand
     end
     
     properties(Dependent,Hidden)
         deltaKx
         readoutDuration
-        spatialResolution
-        gradientAmplitude
+        spatialResolution        
         realBandwidthPerPixel
         dwellTime 
+        readoutGradientFlatTime
+        readoutGradientAmplitude
     end
     
     methods
@@ -48,30 +50,32 @@ classdef protocol < handle
             deltaKx = 1/obj.FOV;
         end
         
-        function readoutDuration = get.readoutDuration(obj)
-            % when divided by 2, the result will still be multiple of the
-            % gradient raster time
-            gradRasterTime = obj.systemLimits.gradRasterTime;
-            readoutDuration = (2*gradRasterTime) * ceil( (1/obj.bandwidthPerPixel) / (2*gradRasterTime) );
+        function readoutDuration = get.readoutDuration(obj)            
+            readoutDuration = obj.dwellTime *(obj.nSamples * obj.readoutOversampling); 
         end
         
         function spatialResolution = get.spatialResolution(obj)
             spatialResolution = obj.FOV / obj.nSamples;
         end
         
-        function gradientAmplitude = get.gradientAmplitude(obj)
-            gradientAmplitude = obj.nSamples * obj.bandwidthPerPixel / obj.FOV;
+        function readoutGradientAmplitude = get.readoutGradientAmplitude(obj)
+            readoutGradientAmplitude = obj.nSamples / (obj.FOV * obj.readoutDuration);
         end
         
         function realBandwidthPerPixel = get.realBandwidthPerPixel(obj)
             realBandwidthPerPixel = round(1/obj.readoutDuration);
         end
         
-        function dwellTime = get.dwellTime(obj)
-            ADCrasterTime = 0.1e-6; % ADC raster time for Siemens machines as I understand
-           dwellTime =  ADCrasterTime * round( obj.readoutDuration / (obj.nSamples * obj.readoutOversampling) / ADCrasterTime );
+        function dwellTime = get.dwellTime(obj)            
+           dwellTime =  obj.ADCrasterTime * round( 1 / (obj.nSamples * obj.readoutOversampling * obj.bandwidthPerPixel) / obj.ADCrasterTime );
         end
         
+        function readoutGradientFlatTime = get.readoutGradientFlatTime(obj)            
+            % due to gradient raster time constraints, the flat area is not
+            % the same as the readout duration, but it has to be a bit larger.
+            gradRasterTime = obj.systemLimits.gradRasterTime;
+            readoutGradientFlatTime = (gradRasterTime) * ceil( obj.readoutDuration / (gradRasterTime) );
+        end
         function estimateNdummyScans(obj,T1,error)
             flipAngleRad = obj.flipAngle * pi / 180;
             % eq. (9.22) of the book.
@@ -125,25 +129,26 @@ classdef protocol < handle
             toPrint = ' ';
             BWpixel_old = obj.bandwidthPerPixel;
             if obj.bandwidthPerPixel < obj.bandwidthPerPixel_min
-                toPrint = sprintf('**bandwidthPerPixel =%6.3f is below lower limit %6.3f. bandwidthPerPixel set to:%6.3f\n',BWpixel_old, obj.bandwidthPerPixel_min, obj.bandwidthPerPixel_min);
+                toPrint = sprintf('**bandwidthPerPixel = %i Hz/pixel is below lower limit %i Hz/pixel. bandwidthPerPixel set to: %i Hz/pixel\n',BWpixel_old, obj.bandwidthPerPixel_min, obj.bandwidthPerPixel_min);
                 obj.bandwidthPerPixel = obj.bandwidthPerPixel_min;
             elseif obj.bandwidthPerPixel > obj.bandwidthPerPixel_max
-                toPrint = sprintf('**bandwidthPerPixel =%6.3f is above upper limit %6.3f. bandwidthPerPixel set to:%6.3f\n',BWpixel_old, obj.bandwidthPerPixel_max, obj.bandwidthPerPixel_max);
+                toPrint = sprintf('**bandwidthPerPixel = %i Hz/pixel is above upper limit %i Hz/pixel. bandwidthPerPixel set to: %i Hz/pixel\n',BWpixel_old, obj.bandwidthPerPixel_max, obj.bandwidthPerPixel_max);
                 obj.bandwidthPerPixel = obj.bandwidthPerPixel_max;            
             end
             % fix bandwidthPerPixel further to comply wit the max gradient amplitude            
-            if obj.gradientAmplitude > obj.systemLimits.maxGrad % maxGrad in Hertz
+            if obj.readoutGradientAmplitude > obj.systemLimits.maxGrad % maxGrad in Hertz
                 BWpixel_new = floor( obj.systemLimits.maxGrad * round(obj.FOV,3) / obj.nSamples );
-                text1 = sprintf('**bandwidthPerPixel = %i was changed to %i',BWpixel_old, BWpixel_new);
+                text1 = sprintf('**bandwidthPerPixel = %i Hz/pixel was changed to %i Hz/pixel',BWpixel_old, BWpixel_new);
                 text2 = sprintf('\n   to keep the maximum gradient amplitude below the limit:%6.3f mT/m\n',mr.convert(obj.systemLimits.maxGrad,'Hz/m','mT/m'));                
                 toPrint = append(text1,text2);
                 obj.bandwidthPerPixel = BWpixel_new;            
             end   
             if ~strcmp(' ',toPrint)
             report{end+1} = toPrint;
-            end
-            
-            if size(report,2) == 1
+            end  
+            if obj.bandwidthPerPixel ~= obj.realBandwidthPerPixel
+            report{end+1} = sprintf('**Update: the exact bandwidthPerPixel (due to raster times constraints) will be %i Hz/pixel\n',obj.realBandwidthPerPixel);
+            if size(report,2) == 2
                 report{end+1} = sprintf('All in-plane resolution parameters accepted\n');
             end
             report{end+1} = sprintf('###...Done.\n\n');            
