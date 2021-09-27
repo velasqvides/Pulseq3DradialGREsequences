@@ -83,7 +83,7 @@ classdef SOSkernel < kernel
             
             GzPartitionsCell = createAllGzPartitions(obj);
             GzPartitionMax = createGzPartitionMax(obj);
-            dispersionDueToGzPartitionMax = obj.calculatePhaseDispersion(abs(GzPartitionMax.area), partitionThickness);
+            dispersionDueToGzPartitionMax = calculatePhaseDispersion(abs(GzPartitionMax.area, partitionThickness);
             dispersionDueToGzPartitionMax = 2 * pi * partitionThickness * abs(GzPartitionMax.area);
             
             GzSpoilersCell = cell(1,nPartitions);

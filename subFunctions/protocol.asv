@@ -76,6 +76,7 @@ classdef protocol < handle
             gradRasterTime = obj.systemLimits.gradRasterTime;
             readoutGradientFlatTime = (gradRasterTime) * ceil( obj.readoutDuration / (gradRasterTime) );
         end
+        
         function estimateNdummyScans(obj,T1,error)
             flipAngleRad = obj.flipAngle * pi / 180;
             % eq. (9.22) of the book.
@@ -109,16 +110,16 @@ classdef protocol < handle
             toPrint = ' ';
             nSamples_old = obj.nSamples;
             if obj.nSamples < obj.nSamples_min
-                toPrint = sprintf('**nSamples = %i is below lower limit %i. nSamples set to:%i\n',nSamples_old, obj.nSamples_min, obj.nSamples_min);                               
+                toPrint = sprintf('**nSamples = %i is below lower limit %i. nSamples set to: %i\n',nSamples_old, obj.nSamples_min, obj.nSamples_min);                               
                 obj.nSamples = obj.nSamples_min;
             elseif obj.nSamples > obj.nSamples_max
-                toPrint = sprintf('**nSamples =%i is above upper limit %i. nSamples set to:%i\n',nSamples_old, obj.nSamples_max, obj.nSamples_max);                
+                toPrint = sprintf('**nSamples = %i is above upper limit %i. nSamples set to: %i\n',nSamples_old, obj.nSamples_max, obj.nSamples_max);                
                 obj.nSamples = obj.nSamples_max;            
             end
             % fix nSamples further to comply with the max spatialResolution
             if obj.spatialResolution < obj.spatialResolution_max
                 nSamples_new = floor(obj.FOV / obj.spatialResolution_max);
-                toPrint = sprintf('**nSamples =%i has to be changed to %i to keep the spatial resolution above the limit:%5.4f\n',nSamples_old, nSamples_new, obj.spatialResolution_max);
+                toPrint = sprintf('**nSamples = %i has to be changed to %i to keep the spatial resolution above the limit:%5.4f\n',nSamples_old, nSamples_new, obj.spatialResolution_max);
                 obj.nSamples = nSamples_new;            
             end
             if ~strcmp(' ',toPrint)
@@ -147,8 +148,9 @@ classdef protocol < handle
             report{end+1} = toPrint;
             end  
             if obj.bandwidthPerPixel ~= obj.realBandwidthPerPixel
-            report{end+1} = sprintf('**Update: the exact bandwidthPerPixel (due to raster times constraints) will be %i Hz/pixel\n',obj.realBandwidthPerPixel);
-            if size(report,2) == 2
+                report{end+1} = sprintf('**Update: the exact bandwidthPerPixel (due to raster times constraints) will be %i Hz/pixel\n',obj.realBandwidthPerPixel);
+            end
+            if size(report,2) == (1 || 2)
                 report{end+1} = sprintf('All in-plane resolution parameters accepted\n');
             end
             report{end+1} = sprintf('###...Done.\n\n');            

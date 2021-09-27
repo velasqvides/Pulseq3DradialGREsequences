@@ -48,9 +48,13 @@ classdef kernel < handle
             %             ADC = mr.makeAdc(nSamples * readoutOversampling,'Duration',readoutDuration,'Delay',Gx.riseTime,'system',systemLimits);
             GxPre = mr.makeTrapezoid('x','Area',-(nSamples * deltaKx)/nSamples*floor(nSamples/2)-(Gx.riseTime*Gx.amplitude)/2,'system',systemLimits);
         end
-        
-        
     end
+    
+    methods(Static)
+       function phaseDispersion = calculatePhaseDispersion(SpoilerArea, voxelDimension)
+           dispersionDueToGzPartitionMax = 2 * pi * partitionThickness * abs(GzPartitionMax.area);
+       end
+   end
     
 end
 

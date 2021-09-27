@@ -39,7 +39,7 @@ classdef protocol < handle
         deltaKx
         readoutDuration
         spatialResolution        
-        realBandwidthPerPixel
+        realBandwidthPerPixel % to distinguish it form the Bwpixel given by the user
         dwellTime 
         readoutGradientFlatTime
         readoutGradientAmplitude
@@ -76,6 +76,7 @@ classdef protocol < handle
             gradRasterTime = obj.systemLimits.gradRasterTime;
             readoutGradientFlatTime = (gradRasterTime) * ceil( obj.readoutDuration / (gradRasterTime) );
         end
+        
         function estimateNdummyScans(obj,T1,error)
             flipAngleRad = obj.flipAngle * pi / 180;
             % eq. (9.22) of the book.
@@ -86,7 +87,7 @@ classdef protocol < handle
             error = error * 100;
             
             if obj.nDummyScans == requieredDummyScans
-                fprintf('**The number of dummy scans seem to be optimal.\n\n')
+                fprintf('**The number of dummy scans seems to be optimal.\n\n')
             else    
                 fprintf('**For the current TR and flip angle, the Suggested # of dummy scans to have a signal within\n')
                 fprintf('%4.2f%% of the steady-sate value is: %i. Current value: %i.\n\n',error, requieredDummyScans,obj.nDummyScans)
