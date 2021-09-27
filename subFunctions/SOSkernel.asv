@@ -6,7 +6,7 @@ classdef SOSkernel < kernel
         Property1
     end
     
-    methods        
+    methods
         function GzPartitionMax = createGzPartitionMax(obj)
             nPartitions = obj.protocol.nPartitions;
             systemLimits = obj.protocol.systemLimits;
@@ -140,31 +140,71 @@ classdef SOSkernel < kernel
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{ii}.area + GzSpoilersCell{ii}.area;
-                    dispersionsPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);                    
+                    dispersionsPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
             end
         end
         
-        function [GxPlusSpoiler,dispersionPerTR] = createGxPlusSpoiler(obj)
-            [Gx, GxPre, ~] = createReadoutEvents(obj);
-            phaseDispersionReadout = obj.protocol.phaseDispersionReadout;
-            systemLimits = obj.protocol.systemLimits;
-            nSamples = obj.protocol.nSamples;
-            deltaKx = obj.protocol.deltaKx; 
-            spatialResolution = obj.protocol.spatialResolution;
-            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
+        function seqEventsStruct = collectSequenceEvents(obj)
+            [RF, ~, ~] = createSlabSelectionEvents(obj);
+            GzCombinedCell = combineGzWithGzRephPlusPartitions(obj);
+            [~, GxPre, ADC] = createReadoutEvents(obj);
+            [GxPlusSpoiler,~] = createGxPlusSpoiler(obj);
+            [GzSpoilersCell, ~] = createGzSpoilers(obj);
             
-            areaGxAfterTE = Gx.area - abs(GxPre.area);
-            inherentDispersionAfterTE = obj.calculatePhaseDispersion(areaGxAfterTE,obj.protocol.spatialResolution);
-            if phaseDispersionReadout <= inherentDispersionAfterTE
-               GxPlusSpoiler = Gx; % add no extra area
-            else               
-               areaSpoilingX = phaseDispersionReadout / (2 * pi * spatialResolution);
-               extraAreaNeeded = areaSpoilingX - areaGxAfterTE;
-               extraFlatTimeNeeded = gradRasterTime * round((extraAreaNeeded / Gx.amplitude)/ gradRasterTime);
-               GxPlusSpoiler = mr.makeTrapezoid('x','amplitude',Gx.amplitude,'FlatTime',Gx.flatTime + extraFlatTimeNeeded,'system',systemLimits);                                
+            seqEventsStruct.RF = RF;
+            seqEventsStruct.GzCombinedCell = GzCombinedCell;
+            seqEventsStruct.GxPre = GxPre;
+            seqEventsStruct.GxPlusSpoiler = GxPlusSpoiler;
+            seqEventsStruct.GzSpoilersCell = GzSpoilersCell;
+            seqEventsStruct.ADC =ADC;
+        end
+        
+        function RfPhasesRad = calculateRfPhasesRad(obj)
+            nDummyScans = obj.protocol.nDummyScans;
+            nSpokes = obj.protocol.nSpokes;
+            nPartitions = obj.protocol.nPartitions;
+            RfSpoilingIncrement = obj.protocol.RfSpoilingIncrement;
+            
+            nRfEvents = nDummyScans + nPartitions * nSpokes;
+            index = 0:1:nRfEvents - 1;
+            RfPhasesDeg = mod(0.5 * RfSpoilingIncrement * (index.^2 + index + 2), 360); % eq. (14.3) Bernstein 2004
+            RfPhasesRad = RfPhasesDeg * pi / 180; % convert to radians.       
+        end
+        
+        function spokeAngles = calculateSpokeAngles(nSpokes, angularOrdering, goldenAngleSequence, angleRange)
+            %calculateSpokeAngles calculates the base spoke angles for one partition
+            %depending on the number of spokes, angular ordering and the angle range.
+                        
+            index = 0:1:nSpokes - 1;
+            
+            if strcmp(angularOrdering,'uniformAlternating')
+                
+                angularSamplingInterval = pi / nSpokes;
+                spokeAngles = angularSamplingInterval * index; % array containing necessary angles for one partition
+                spokeAngles(2:2:end) = spokeAngles(2:2:end) + pi; % add pi to every second spoke angle to achieved alternation
+                
+            else
+                
+                switch angularOrdering
+                    case 'uniform'
+                        angularSamplingInterval = pi / nSpokes;
+                        
+                    case 'goldenAngle'
+                        tau = (sqrt(5) + 1) / 2; % golden ratio
+                        N = goldenAngleSequence;
+                        angularSamplingInterval = pi / (tau + N - 1);
+                end
+                
+                spokeAngles = angularSamplingInterval * index; % array containing necessary angles for one partition
+                
+                switch angleRange
+                    case 'fullCircle'
+                        spokeAngles = mod(spokeAngles, 2 * pi); % projection angles in [0, 2*pi)
+                    case 'halfCircle'
+                        spokeAngles = mod(spokeAngles, pi); % projection angles in [0, pi)
+                end
             end
-            dispersionPerTR = obj.calculatePhaseDispersion(GxPlusSpoiler.area-abs(GxPre.area), a.protocol.spatialResolution);
         end
     end
     

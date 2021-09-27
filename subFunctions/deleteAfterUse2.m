@@ -7,5 +7,5 @@ a=SOSkernel(inputs);
 [GxPlusSpoiler, dispersionPerTR] = a.createGxPlusSpoiler;
 % Gp = a.createAllGzPartitions;
 % Grp=a.createGzRephAndPartitions;
-% [~, ~, GzReph] = a.createSlabSelectionEvents;
+[RF, ~, GzReph] = a.createSlabSelectionEvents;
 % spoiler= a.createGzSpoilers;

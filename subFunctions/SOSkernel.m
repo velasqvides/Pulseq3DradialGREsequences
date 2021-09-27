@@ -6,7 +6,7 @@ classdef SOSkernel < kernel
         Property1
     end
     
-    methods        
+    methods
         function GzPartitionMax = createGzPartitionMax(obj)
             nPartitions = obj.protocol.nPartitions;
             systemLimits = obj.protocol.systemLimits;
@@ -63,13 +63,17 @@ classdef SOSkernel < kernel
         
         function GzCombinedCell = combineGzWithGzRephPlusPartitions(obj)
             nPartitions = obj.protocol.nPartitions;
-            systemLimits = obj.protocol.systemLimits;
+            systemLimits = obj.protocol.systemLimits;            
             [~, Gz, ~] = obj.createSlabSelectionEvents(obj);
             GzRephPlusPartitionsCell = createGzRephPlusPartitions(obj);
             
-            GzCombinedCell = cell(1,nPartitions);
+            GzCombinedCell = cell(1,nPartitions);            
             for iz=1:nPartitions
-                GzCombinedCell{iz} = mr.addGradients({Gz, GzRephPlusPartitionsCell{iz}}, 'system', systemLimits);
+                if isempty(Gz)% means that only GzPartition exist
+                    GzCombinedCell{iz} = GzRephPlusPartitionsCell{iz};
+                else 
+                    GzCombinedCell{iz} = mr.addGradients({Gz, GzRephPlusPartitionsCell{iz}}, 'system', systemLimits);
+                end
             end
         end
         
@@ -140,10 +144,104 @@ classdef SOSkernel < kernel
                         GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{ii}.area + GzSpoilersCell{ii}.area;
-                    dispersionsPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);                    
+                    dispersionsPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
             end
         end
+        
+        function seqEventsStruct = collectSequenceEvents(obj)
+            [RF, ~, ~] = createSlabSelectionEvents(obj);
+            GzCombinedCell = combineGzWithGzRephPlusPartitions(obj);
+            [~, GxPre, ADC] = createReadoutEvents(obj);
+            [GxPlusSpoiler,~] = createGxPlusSpoiler(obj);
+            [GzSpoilersCell, ~] = createGzSpoilers(obj);
+            
+            seqEventsStruct.RF = RF;
+            seqEventsStruct.GzCombinedCell = GzCombinedCell;
+            seqEventsStruct.GxPre = GxPre;
+            seqEventsStruct.GxPlusSpoiler = GxPlusSpoiler;
+            seqEventsStruct.GzSpoilersCell = GzSpoilersCell;
+            seqEventsStruct.ADC =ADC;
+        end
+        
+        function RfPhasesRad = calculateRfPhasesRad(obj)
+            nDummyScans = obj.protocol.nDummyScans;
+            nSpokes = obj.protocol.nSpokes;
+            nPartitions = obj.protocol.nPartitions;
+            RfSpoilingIncrement = obj.protocol.RfSpoilingIncrement;
+            
+            nRfEvents = nDummyScans + nPartitions * nSpokes;
+            index = 0:1:nRfEvents - 1;
+            RfPhasesDeg = mod(0.5 * RfSpoilingIncrement * (index.^2 + index + 2), 360); % eq. (14.3) Bernstein 2004
+            RfPhasesRad = RfPhasesDeg * pi / 180; % convert to radians.
+        end
+        
+        function spokeAngles = calculateSpokeAngles(obj)
+            %calculateSpokeAngles calculates the base spoke angles for one partition
+            %depending on the number of spokes, angular ordering and the angle range.
+            nSpokes = obj.protocol.nSpokes;
+            angularOrdering = obj.protocol.angularOrdering;
+            goldenAngleSequence = obj.protocol.goldenAngleSequence;
+            angleRange = obj.protocol.angleRange;
+            
+            index = 0:1:nSpokes - 1;
+            
+            if strcmp(angularOrdering,'uniformAlternating')
+                
+                angularSamplingInterval = pi / nSpokes;
+                spokeAngles = angularSamplingInterval * index; % array containing necessary angles for one partition
+                spokeAngles(2:2:end) = spokeAngles(2:2:end) + pi; % add pi to every second spoke angle to achieved alternation
+                
+            else
+                
+                switch angularOrdering
+                    case 'uniform'
+                        angularSamplingInterval = pi / nSpokes;
+                        
+                    case 'goldenAngle'
+                        tau = (sqrt(5) + 1) / 2; % golden ratio
+                        N = goldenAngleSequence;
+                        angularSamplingInterval = pi / (tau + N - 1);
+                end
+                
+                spokeAngles = angularSamplingInterval * index; % array containing necessary angles for one partition
+                
+                switch angleRange
+                    case 'fullCircle'
+                        spokeAngles = mod(spokeAngles, 2 * pi); % projection angles in [0, 2*pi)
+                    case 'halfCircle'
+                        spokeAngles = mod(spokeAngles, pi); % projection angles in [0, pi)
+                end
+            end
+        end
+        
+        function partitionRotationAngles = calculatePartitionRotationAngles(obj)
+            %calculatePartitionRotationAngles calculates the angle offset across
+            %partitions according to the parameter partitionRotation.
+            nSpokes = obj.protocol.nSpokes;
+            nPartitions = obj.protocol.nPartitions;
+            partitionRotation = obj.protocol.partitionRotation;
+            index = 0:1:Nz - 1;
+            
+            switch partitionRotation
+                
+                case 'aligned'
+                    
+                    partitionRotationAngles = zeros(1,nPartitions);
+                    
+                case 'linear'
+                    
+                    partitionRotationAngles = ( (pi / nSpokes) * (1 / nPartitions) ) * index;
+                    
+                case 'goldenAngle'
+                    
+                    partitionRotationAngles = ( (pi / nSpokes) * ((sqrt(5) - 1) / 2) ) * index;
+                    partitionRotationAngles = mod(partitionRotationAngles, pi/nSpokes);
+                    
+            end
+        end
+        
+        
         
     end
     
