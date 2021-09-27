@@ -5,7 +5,8 @@
 % resolution and contrast can be achieved. Messages are given in the 
 % command window in case that some parameter is modified. 
 %  
-clear variables
+clear variables 
+clc
 % create class SOSprotocol
 inputs = SOSprotocol(); 
 %% I. data collection
@@ -15,7 +16,7 @@ inputs.slabThickness = 256e-3;  % in meters
 inputs.nSamples = 256;  
 inputs.nPartitions = 256;        
 inputs.nSpokes = 256;                       
-inputs.bandwidthPerPixel = 1667; % in Herz                  
+inputs.bandwidthPerPixel = 1628; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
 inputs.nDummyScans = 335;

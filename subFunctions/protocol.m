@@ -148,6 +148,7 @@ classdef protocol < handle
             report{end+1} = toPrint;
             end  
             if obj.bandwidthPerPixel ~= obj.realBandwidthPerPixel
+                obj.bandwidthPerPixel = obj.realBandwidthPerPixel;
                 report{end+1} = sprintf('**Update: the exact bandwidthPerPixel (due to raster times constraints) will be %i Hz/pixel\n',obj.realBandwidthPerPixel);
             end
             if size(report,2) == (1 || 2)
