@@ -299,7 +299,42 @@ classdef SOSkernel < kernel
         end
         
         function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj)
-            % todo
+            viewOrder = obj.protocol.viewOrder;
+            nSpokes = obj.protocol.nSpokes;
+            nPartitions = obj.protocol.nPartitions;
+            nDummyScans = obj.protocol.nDummyScans;
+            spokeAngles = calculateSpokeAngles(obj);
+            partRotAngles = calculatePartitionRotationAngles(obj);
+            
+            counter = 1;
+            angles = zeros(1, nSpokes * nPartitions);
+            partitionIndx = zeros(1, nSpokes * nPartitions);
+            switch viewOrder
+                case 'partitionsInOuterLoop'                    
+                    for iZ=1:nPartitions
+                        for iR=1:nSpokes
+                            angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
+                            partitionIndx(counter) = iZ;
+                            counter = counter + 1;
+                        end
+                    end
+                case 'partitionsInInnerLoop'                    
+                    for iR=1:nSpokes
+                        for iZ=1:nPartitions
+                            angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
+                            partitionIndx(counter) = iZ;
+                            counter = counter + 1;
+                        end
+                    end
+            end
+            
+            if nDummyScans > 0
+                allAngles = [angles(1:nDummyScans) angles]; % replicate the first nDummyScans angles for the dummy scans
+                allPartitionIndx = [partitionIndx(1:nDummyScans) partitionIndx]; % replicate the first partitionIndx indexes for the dummy scans
+            else
+                allAngles = angles;
+                allPartitionIndx = partitionIndx;
+            end
         end
         
         function sequenceObject = createSequenceObject(obj)
@@ -322,25 +357,20 @@ classdef SOSkernel < kernel
             sequenceObject = mr.Sequence();
             RFcounter = 1; % to keep track of the number of applied RF pulses.
             durationSecondBlock = delayTR + mr.calcDuration(GxPlusSpoiler, GzSpoilersCell{1});
-            for iF = 1:length(allAngles)
-                
+            for iF = 1:length(allAngles)                
                 iZ = allPartitionIndx(iF);
                 RF.phaseOffset = RfPhasesRad(RFcounter);
                 ADC.phaseOffset = RfPhasesRad(RFcounter);
                                 
-                sequenceObject.addBlock( mr.rotate('z', allAngles(iF), RF, GzCombinedCell{iZ},GxPre) );
+                    sequenceObject.addBlock( mr.rotate('z', allAngles(iF), RF, GzCombinedCell{iZ},GxPre) );
                 if iF > nDummyScans % include ADC events
                     sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, ADC, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );                    
                 else % no ADC event
                     sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );
                 end 
                 
-                RFcounter = RFcounter + 1;
-                
-            end
-            
-            
-            
+                RFcounter = RFcounter + 1;                
+            end 
         end
         
         function simulateSequence(obj)

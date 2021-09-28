@@ -299,7 +299,42 @@ classdef SOSkernel < kernel
         end
         
         function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj)
-            % todo
+            viewOrder = obj.protocol.viewOrder;
+            nSpokes = obj.protocol.nSpokes;
+            nPartitions = obj.protocol.nPartitions;
+            nDummyScans = obj.protocol.nDummyScans;
+            spokeAngles = calculateSpokeAngles(obj);
+            partRotAngles = calculatePartitionRotationAngles(obj);
+            
+            counter = 1;
+            angles = zeros(1, nSpokes * nPartitions);
+            partitionIndx = zeros(1, nSpokes * nPartitions);
+            switch viewOrder
+                case 'partitionsInOuterLoop'                    
+                    for iZ=1:nPartitions
+                        for iR=1:nSpokes
+                            angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
+                            partitionIndx(counter) = iZ;
+                            counter = counter + 1;
+                        end
+                    end
+                case 'partitionsInInnerLoop'                    
+                    for iR=1:nSpokes
+                        for iZ=1:nPartitions
+                            angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
+                            partitionIndx(counter) = iZ;
+                            counter = counter + 1;
+                        end
+                    end
+            end
+            
+            if nDummyScans > 0
+                allAngles = [angles(1:nDummyScans) angles]; % replicate the first nDummyScans angles for the dummy scans
+                allPartitionIndx = [partitionIndx(1:nDummyScans) partitionIndx]; % replicate the first partitionIndx indexes for the dummy scans
+            else
+                allAngles = angles;
+                allPartitionIndx = partitionIndx;
+            end
         end
         
         function sequenceObject = createSequenceObject(obj)
@@ -344,7 +379,10 @@ classdef SOSkernel < kernel
         end
         
         function writeSequence(obj)
-            % cretaeSequence and write it
+            sequenceObject = createSequenceObject(obj);
+            sequenceObject.setDefinition('FOV', [FOV FOV slabThickness]);
+            sequenceObject.setDefinition('Name', '3D_radial_stackOfStars');            
+            sequenceObject.write('3D_radial_stackOfStars.seq')
         end
         
     end
