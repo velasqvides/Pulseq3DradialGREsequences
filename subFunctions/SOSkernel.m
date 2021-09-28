@@ -270,7 +270,7 @@ classdef SOSkernel < kernel
             nSpokes = obj.protocol.nSpokes;
             nPartitions = obj.protocol.nPartitions;
             partitionRotation = obj.protocol.partitionRotation;
-            index = 0:1:Nz - 1;
+            index = 0:1:nPartitions - 1;
             
             switch partitionRotation
                 
@@ -338,6 +338,12 @@ classdef SOSkernel < kernel
         end
         
         function sequenceObject = createSequenceObject(obj)
+            isValidated = obj.protocol.isValidated;            
+            if ~isValidated
+                msg = 'The input parameters must be validated first.';
+                error(msg)
+            end
+            
             [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj);            
             RfPhasesRad = calculateRfPhasesRad(obj);
             [delayTE, delayTR] = calculateTeAndTrDelays(obj);
@@ -379,10 +385,26 @@ classdef SOSkernel < kernel
         end
         
         function writeSequence(obj)
+            FOV = obj.protocol.FOV;
+            slabThickness = obj.protocol.slabThickness;
             sequenceObject = createSequenceObject(obj);
+            
             sequenceObject.setDefinition('FOV', [FOV FOV slabThickness]);
-            sequenceObject.setDefinition('Name', '3D_radial_stackOfStars');            
-            sequenceObject.write('3D_radial_stackOfStars.seq')
+            sequenceObject.setDefinition('Name', '3D_radial_stackOfStars');
+            sequenceObject.write('3D_radial_stackOfStars.seq');
+            saveInfo4Reco(obj);
+        end
+        
+        function saveInfo4Reco(obj)
+            info4Reco.FOV = obj.protocol.FOV;
+            info4Reco.nSamples = obj.protocol.nSamples;
+            info4Reco.nPartitions = obj.protocol.nPartitions;
+            info4Reco.readoutOversampling = obj.protocol.readoutOversampling;
+            info4Reco.nSpokes = obj.protocol.nSpokes;
+            info4Reco.viewOrder = obj.protocol.viewOrder;
+            info4Reco.spokeAngles = calculateSpokeAngles(obj);
+            info4Reco.partitionRotationAngles = calculatePartitionRotationAngles(obj);
+            save('info4RecoSoS.mat','info4Reco');
         end
         
     end

@@ -21,8 +21,12 @@ classdef protocol < handle
         TE (1,1) double {mustBeNumeric}=2.21e-3
         TR (1,1) double {mustBeNumeric}=4.36e-3
         systemLimits (1,1) struct
-        end
+    end
     
+    properties(Hidden)    
+    isValidated = false;
+    end
+        
     properties(Access = private, Constant)
         nSamples_min = 64
         nSamples_max = 1024;

@@ -12,5 +12,6 @@ a=SOSkernel(inputs);
 %  [GxPlusSpoiler,~] = a.createGxPlusSpoiler;
 % [RF, ~, GzReph] = a.createSlabSelectionEvents;
 % spoiler= a.createGzSpoilers;
-AlignedSeqEvents = a.alignSeqEvents;
-SeqEvents = a.collectSequenceEvents;
+% AlignedSeqEvents = a.alignSeqEvents;
+% SeqEvents = a.collectSequenceEvents;
+a.writeSequence;

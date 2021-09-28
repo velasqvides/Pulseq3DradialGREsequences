@@ -157,7 +157,9 @@ classdef SOSprotocol < protocol
         function validateProtocol(obj)
             
             validateResolution(obj)                      
-            validateResolutionZ(obj)            
+            validateResolutionZ(obj)  
+            % validateTEandTR(obj)
+            obj.isValidated = true;
             fprintf('Tip: type: inputs, to double check the parameter values. \n\n')
             
         end
