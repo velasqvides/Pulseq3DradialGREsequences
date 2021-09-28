@@ -14,4 +14,4 @@ a=SOSkernel(inputs);
 % spoiler= a.createGzSpoilers;
 % AlignedSeqEvents = a.alignSeqEvents;
 % SeqEvents = a.collectSequenceEvents;
-a.writeSequence;
+a.simulateSequence;
