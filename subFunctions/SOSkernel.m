@@ -195,7 +195,7 @@ classdef SOSkernel < kernel
             
             % 2 fix the second block (GxPlusSpoiler, ADC, GzSpoilersCell)
             % 2.1 add delay to the ADC event to appear at the same time as
-            % the flat region of Gx
+            % the flat region of Gx            
             ADC.delay = GxPlusSpoiler.riseTime;
             % 2.2 add delay to GzSpoliers to appear just after the flat
             % region of GxPlusSpoilers
@@ -380,17 +380,16 @@ classdef SOSkernel < kernel
         end
         
         function simulateSequence(obj)            
-            viewOrder = obj.protocol.viewOrder;   
-            nPartitions = obj.protocol.nPartitions;
+            viewOrder = obj.protocol.viewOrder;
             newObj = obj;
             
             newObj.protocol.nDummyScans = 5;
-            newObj.protocol.nPartitions = obj.protocol.nPartitions_min;
+            newObj.protocol.nPartitions = 5;
             switch viewOrder                
             case 'partitionsInOuterLoop'
-                newObj.protocol.nSpokes = 21; 
+                newObj.protocol.nSpokes = 15; 
             case 'partitionsInInnerLoop'
-                newObj.protocol.nSpokes = 21;                
+                newObj.protocol.nSpokes = 15;                
             end
             fprintf('**Testing the sequence with: %s,\n',viewOrder);
             fprintf('  nDummyScans: %i\n',newObj.protocol.nDummyScans);
