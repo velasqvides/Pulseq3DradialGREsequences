@@ -380,23 +380,24 @@ classdef SOSkernel < kernel
         end
         
         function simulateSequence(obj)            
-            viewOrder = obj.protocol.viewOrder;            
+            viewOrder = obj.protocol.viewOrder;   
+            nPartitions = obj.protocol.nPartitions;
             newObj = obj;
             
-            newObj.nDummyScans = 5;
+            newObj.protocol.nDummyScans = 5;
             switch viewOrder                
             case 'partitionsInOuterLoop'
-                newObj.nSpokes = 3; 
+                newObj.protocol.nSpokes = 3; 
             case 'partitionsInInnerLoop'
-                newObj.nSpokes = 15;                
+                newObj.protocol.nSpokes = 15;                
             end
             fprintf('**Testing the sequence with: %s,\n',viewOrder);
-            fprintf('  nDummyScans: %i\n',newObj.nDummyScans);
-            fprintf('  nSpokes: %i\n',newObj.nSpokes);
-            fprintf('  nPartitions: %i\n',obj.nPartitions);
+            fprintf('  nDummyScans: %i\n',newObj.protocol.nDummyScans);
+            fprintf('  nSpokes: %i\n',newObj.protocol.nSpokes);
+            fprintf('  nPartitions: %i\n\n',nPartitions);
             
-            giveTestingInfo(obj)
-            writeSequence(obj);            
+            writeSequence(newObj);
+            giveTestingInfo(newObj)
         end
         
         function writeSequence(obj)
@@ -424,7 +425,7 @@ classdef SOSkernel < kernel
         end
         
         function giveTestingInfo(obj)
-            gradRasterTime = obj.protocol.gradRasterTime;
+            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
             sequenceObject = createSequenceObject(obj);
             sequenceObject.plot();
             % seq.sound();

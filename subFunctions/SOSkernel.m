@@ -385,19 +385,20 @@ classdef SOSkernel < kernel
             newObj = obj;
             
             newObj.protocol.nDummyScans = 5;
+            newObj.protocol.nPartitions = obj.protocol.nPartitions_min;
             switch viewOrder                
             case 'partitionsInOuterLoop'
-                newObj.protocol.nSpokes = 3; 
+                newObj.protocol.nSpokes = 21; 
             case 'partitionsInInnerLoop'
-                newObj.protocol.nSpokes = 15;                
+                newObj.protocol.nSpokes = 21;                
             end
             fprintf('**Testing the sequence with: %s,\n',viewOrder);
             fprintf('  nDummyScans: %i\n',newObj.protocol.nDummyScans);
             fprintf('  nSpokes: %i\n',newObj.protocol.nSpokes);
-            fprintf('  nPartitions: %i\n',nPartitions);
+            fprintf('  nPartitions: %i\n\n',newObj.protocol.nPartitions);
             
+            writeSequence(newObj);
             giveTestingInfo(newObj)
-            writeSequence(newObj);            
         end
         
         function writeSequence(obj)
