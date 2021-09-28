@@ -63,15 +63,16 @@ classdef SOSkernel < kernel
         
         function GzCombinedCell = combineGzWithGzRephPlusPartitions(obj)
             nPartitions = obj.protocol.nPartitions;
-            systemLimits = obj.protocol.systemLimits;            
-            [~, Gz, ~] = obj.createSlabSelectionEvents(obj);
+            systemLimits = obj.protocol.systemLimits;
+            [~, Gz, ~] = createSlabSelectionEvents(obj);
             GzRephPlusPartitionsCell = createGzRephPlusPartitions(obj);
             
-            GzCombinedCell = cell(1,nPartitions);            
+            GzCombinedCell = cell(1,nPartitions);
             for iz=1:nPartitions
                 if isempty(Gz)% means that only GzPartition exist
                     GzCombinedCell{iz} = GzRephPlusPartitionsCell{iz};
-                else 
+                else
+                    GzRephPlusPartitionsCell{iz}.delay = GzRephPlusPartitionsCell{iz}.delay + mr.calcDuration(Gz);
                     GzCombinedCell{iz} = mr.addGradients({Gz, GzRephPlusPartitionsCell{iz}}, 'system', systemLimits);
                 end
             end
@@ -149,19 +150,67 @@ classdef SOSkernel < kernel
             end
         end
         
-        function seqEventsStruct = collectSequenceEvents(obj)
+        function SeqEvents = collectSequenceEvents(obj)
             [RF, ~, ~] = createSlabSelectionEvents(obj);
             GzCombinedCell = combineGzWithGzRephPlusPartitions(obj);
             [~, GxPre, ADC] = createReadoutEvents(obj);
             [GxPlusSpoiler,~] = createGxPlusSpoiler(obj);
             [GzSpoilersCell, ~] = createGzSpoilers(obj);
             
-            seqEventsStruct.RF = RF;
-            seqEventsStruct.GzCombinedCell = GzCombinedCell;
-            seqEventsStruct.GxPre = GxPre;
-            seqEventsStruct.GxPlusSpoiler = GxPlusSpoiler;
-            seqEventsStruct.GzSpoilersCell = GzSpoilersCell;
-            seqEventsStruct.ADC =ADC;
+            SeqEvents.RF = RF;
+            SeqEvents.GzCombinedCell = GzCombinedCell;
+            SeqEvents.GxPre = GxPre;
+            SeqEvents.GxPlusSpoiler = GxPlusSpoiler;
+            SeqEvents.GzSpoilersCell = GzSpoilersCell;
+            SeqEvents.ADC = ADC;
+        end
+        
+        function AlignedSeqEvents = alignSeqEvents(obj)
+            SeqEvents = collectSequenceEvents(obj);
+            RF = SeqEvents.RF;
+            GzCombinedCell = SeqEvents.GzCombinedCell;
+            GxPre = SeqEvents.GxPre;
+            GxPlusSpoiler = SeqEvents.GxPlusSpoiler;
+            GzSpoilersCell = SeqEvents.GzSpoilersCell;
+            ADC = SeqEvents.ADC;
+            rfRingdownTime = obj.protocol.systemLimits.rfRingdownTime;
+            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
+            RfExcitation = obj.protocol.RfExcitation;
+            
+            % 1. fix the first block (RF, GzCombinedCell, and GxPre)
+            if strcmp(RfExcitation,'nonSelective')
+                delay = mr.calcDuration(RF) - rfRingdownTime;
+                for ii =1:size(GzCombinedCell,2)
+                    GzCombinedCell{ii}.delay = GzCombinedCell{ii}.delay + delay; %1.1
+                end
+            end
+            
+            durationGzCombined = mr.calcDuration(GzCombinedCell{1});
+            durationGxPre = mr.calcDuration(GxPre);
+            if durationGzCombined > durationGxPre
+                % align GzRephPlusGzPartition and GxPre to the right
+                addDelay = durationGzCombined - durationGxPre;
+                GxPre.delay = GxPre.delay + (addDelay / gradRasterTime) * gradRasterTime; % 1.2
+            end
+            
+            % 2 fix the second block (GxPlusSpoiler, ADC, GzSpoilersCell)
+            % 2.1 add delay to the ADC event to appear at the same time as
+            % the flat region of Gx
+            ADC.delay = GxPlusSpoiler.riseTime;
+            % 2.2 add delay to GzSpoliers to appear just after the flat
+            % region of GxPlusSpoilers
+            addDelay = GxPlusSpoiler.riseTime + GxPlusSpoiler.flatTime;
+            for kk=1:size(GzSpoilersCell,2)
+                GzSpoilersCell{kk}.delay = GzSpoilersCell{kk}.delay + addDelay; % GzSpoiler can appear after flat region of Gx in the same block
+            end
+            
+            % return the aligned events in a struct
+            AlignedSeqEvents.RF = RF;
+            AlignedSeqEvents.GzCombinedCell = GzCombinedCell;
+            AlignedSeqEvents.GxPre = GxPre;
+            AlignedSeqEvents.GxPlusSpoiler = GxPlusSpoiler;
+            AlignedSeqEvents.GzSpoilersCell = GzSpoilersCell;
+            AlignedSeqEvents.ADC = ADC;
         end
         
         function RfPhasesRad = calculateRfPhasesRad(obj)
@@ -241,7 +290,106 @@ classdef SOSkernel < kernel
             end
         end
         
+        function [TE_min, TR_min]  = calculateMinTeTr(obj)
+           %todo 
+        end
         
+        function sequenceKernel = createOneSequenceKernel(obj)
+            %todo
+        end
+        
+        function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj)
+            % todo
+        end
+        
+        function sequenceObject = createSequenceObject(obj)
+            [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj);
+            AlignedSeqEvents = alignSeqEvents(obj);
+            RfPhasesRad = calculateRfPhasesRad(obj);
+            [delayTE, delayTR] = calculateTeAndTrDelays(obj);
+            sequenceObject = mr.Sequence();
+            
+            RFcounter = 1; % to keep track of the number of applied RF pulses.
+            for iF = 1:length(allAngles)
+                
+                iZ = allPartitionIndx(iF);
+                RF.phaseOffset = RfPhasesRad(RFcounter);
+                ADC.phaseOffset = RfPhasesRad(RFcounter);
+                
+                if strcmp(RfExcitation, 'selectiveSinc')
+                    seq.addBlock(RF, Gz);
+                    if delayTE == 0
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GzRephPlusGzPartition(iZ), GxPre));
+                    elseif delayTE > 0  &&  delayTE < mr.calcDuration(GzRephPlusGzPartition(iZ))
+                        seq.addBlock(mr.makeDelay(delayTE));
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GzRephPlusGzPartition(iZ), GxPre));
+                    elseif delayTE >= mr.calcDuration(GzRephPlusGzPartition(iZ))
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GzRephPlusGzPartition(iZ), mr.makeDelay(delayTE)));
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GxPre));
+                    end
+                else % nonSelective excitation
+                    seq.addBlock(RF);
+                    if delayTE == 0
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GzPartition(iZ), GxPre));
+                    elseif delayTE > 0  &&  delayTE < mr.calcDuration(GzPartition(iZ))
+                        seq.addBlock(mr.makeDelay(delayTE));
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GzPartition(iZ), GxPre));
+                    elseif delayTE >= mr.calcDuration(GzPartition(iZ))
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GzPartition(iZ), mr.makeDelay(delayTE)));
+                        seq.addBlock(mr.rotate('z', allAngles(iF), GxPre));
+                    end
+                end
+                
+                if iF > nDummyScans % include ADC events
+                    
+                    if isempty(GxSpoiler)
+                        seq.addBlock(mr.rotate('z', allAngles(iF), Gx, ADC, GzSpoiler(iZ)));
+                    else
+                        if ~isempty(GxPlusSpoiler)
+                            seq.addBlock(mr.rotate('z', allAngles(iF), GxPlusSpoiler, ADC, GzSpoiler(iZ)));
+                        else
+                            seq.addBlock(mr.rotate('z', allAngles(iF), Gx, ADC));
+                            GzSpoiler(iZ).delay = 0;
+                            seq.addBlock(mr.rotate('z', allAngles(iF), GxSpoiler, GzSpoiler(iZ)));
+                        end
+                    end
+                    
+                else % no ADC event
+                    
+                    if isempty(GxSpoiler)
+                        seq.addBlock(mr.rotate('z', allAngles(iF), Gx, GzSpoiler(iZ)));
+                    else
+                        if ~isempty(GxPlusSpoiler)
+                            seq.addBlock(mr.rotate('z', allAngles(iF), GxPlusSpoiler, GzSpoiler(iZ)));
+                        else
+                            seq.addBlock(mr.rotate('z', allAngles(iF), Gx));
+                            GzSpoiler(iZ).delay = 0;
+                            seq.addBlock(mr.rotate('z', allAngles(iF), GxSpoiler, GzSpoiler(iZ)));
+                        end
+                    end
+                end
+                
+                
+                if delayTR > 0
+                    seq.addBlock(mr.makeDelay(delayTR))
+                end
+                
+                RFcounter = RFcounter + 1;
+                
+            end
+            
+            
+            
+        end
+        
+        function simulateSequence(obj)
+            % modify the numeber of partitions and spokes and run
+            % cretaeSequence
+        end
+        
+        function writeSequence(obj)
+            % cretaeSequence and write it
+        end
         
     end
     

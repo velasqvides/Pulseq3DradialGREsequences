@@ -45,9 +45,7 @@ classdef kernel < handle
             Gx = mr.makeTrapezoid('x','Amplitude',readoutGradientAmplitude,'FlatTime',readoutGradientFlatTime,'system',systemLimits);            
             GxPreArea = -(nSamples * deltaKx)/nSamples*floor(nSamples/2) - (Gx.riseTime*Gx.amplitude)/2;
             GxPre = mr.makeTrapezoid('x','Area',GxPreArea,'system',systemLimits);
-            ADC = mr.makeAdc(nSamples * readoutOversampling,'Dwell',dwellTime,'Delay',Gx.riseTime,'system',systemLimits);
-            %             Gx = mr.makeTrapezoid('x','FlatArea',nSamples * deltaKx,'FlatTime',readoutDuration,'system',systemLimits);
-            %             ADC = mr.makeAdc(nSamples * readoutOversampling,'Duration',readoutDuration,'Delay',Gx.riseTime,'system',systemLimits);
+            ADC = mr.makeAdc(nSamples * readoutOversampling,'Dwell',dwellTime,'system',systemLimits);            
         end
         
         function [GxPlusSpoiler,dispersionPerTR] = createGxPlusSpoiler(obj)
@@ -69,11 +67,7 @@ classdef kernel < handle
             end
             dispersionPerTR = obj.calculatePhaseDispersion(GxPlusSpoiler.area-abs(GxPre.area), obj.protocol.spatialResolution);
         end
-        
-        function [TE_min, TR_min]  = calculateMinTeTr(obj)
-        % to do
-        end
-        
+                        
         function [delayTE, delayTR] = calculateTeAndTrDelays(obj)
             %calculateTeAndTrDelays calculates the TE and TR delays needed to add some
             %dead time in the sequence, in order to get the desired TE and TR
