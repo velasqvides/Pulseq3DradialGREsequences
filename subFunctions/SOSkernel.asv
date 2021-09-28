@@ -303,76 +303,37 @@ classdef SOSkernel < kernel
         end
         
         function sequenceObject = createSequenceObject(obj)
-            [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj);
-            AlignedSeqEvents = alignSeqEvents(obj);
+            [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj);            
             RfPhasesRad = calculateRfPhasesRad(obj);
             [delayTE, delayTR] = calculateTeAndTrDelays(obj);
-            sequenceObject = mr.Sequence();
+            nDummyScans = obj.protocol.nDummyScans;
             
+            AlignedSeqEvents = alignSeqEvents(obj);
+            RF = AlignedSeqEvents.RF;
+            GzCombinedCell = AlignedSeqEvents.GzCombinedCell;
+            GxPre = AlignedSeqEvents.GxPre;
+            GxPlusSpoiler = AlignedSeqEvents.GxPlusSpoiler;
+            GzSpoilersCell = AlignedSeqEvents.GzSpoilersCell;
+            ADC = AlignedSeqEvents.ADC;
+            
+            % last alignement to have 
+            GxPre.delay = GxPre.delay + delayTE;
+            
+            sequenceObject = mr.Sequence();
             RFcounter = 1; % to keep track of the number of applied RF pulses.
+            durationSecondBlock = delayTR + mr.calcDuration(GxPlusSpoiler, GzSpoilersCell{1});
             for iF = 1:length(allAngles)
                 
                 iZ = allPartitionIndx(iF);
                 RF.phaseOffset = RfPhasesRad(RFcounter);
                 ADC.phaseOffset = RfPhasesRad(RFcounter);
-                
-                if strcmp(RfExcitation, 'selectiveSinc')
-                    seq.addBlock(RF, Gz);
-                    if delayTE == 0
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GzRephPlusGzPartition(iZ), GxPre));
-                    elseif delayTE > 0  &&  delayTE < mr.calcDuration(GzRephPlusGzPartition(iZ))
-                        seq.addBlock(mr.makeDelay(delayTE));
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GzRephPlusGzPartition(iZ), GxPre));
-                    elseif delayTE >= mr.calcDuration(GzRephPlusGzPartition(iZ))
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GzRephPlusGzPartition(iZ), mr.makeDelay(delayTE)));
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GxPre));
-                    end
-                else % nonSelective excitation
-                    seq.addBlock(RF);
-                    if delayTE == 0
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GzPartition(iZ), GxPre));
-                    elseif delayTE > 0  &&  delayTE < mr.calcDuration(GzPartition(iZ))
-                        seq.addBlock(mr.makeDelay(delayTE));
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GzPartition(iZ), GxPre));
-                    elseif delayTE >= mr.calcDuration(GzPartition(iZ))
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GzPartition(iZ), mr.makeDelay(delayTE)));
-                        seq.addBlock(mr.rotate('z', allAngles(iF), GxPre));
-                    end
-                end
-                
+                                
+                sequenceObject.addBlock( mr.rotate('z', allAngles(iF), RF, GzCombinedCell{iZ},GxPre) );
                 if iF > nDummyScans % include ADC events
-                    
-                    if isempty(GxSpoiler)
-                        seq.addBlock(mr.rotate('z', allAngles(iF), Gx, ADC, GzSpoiler(iZ)));
-                    else
-                        if ~isempty(GxPlusSpoiler)
-                            seq.addBlock(mr.rotate('z', allAngles(iF), GxPlusSpoiler, ADC, GzSpoiler(iZ)));
-                        else
-                            seq.addBlock(mr.rotate('z', allAngles(iF), Gx, ADC));
-                            GzSpoiler(iZ).delay = 0;
-                            seq.addBlock(mr.rotate('z', allAngles(iF), GxSpoiler, GzSpoiler(iZ)));
-                        end
-                    end
-                    
+                    sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, ADC, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );                    
                 else % no ADC event
-                    
-                    if isempty(GxSpoiler)
-                        seq.addBlock(mr.rotate('z', allAngles(iF), Gx, GzSpoiler(iZ)));
-                    else
-                        if ~isempty(GxPlusSpoiler)
-                            seq.addBlock(mr.rotate('z', allAngles(iF), GxPlusSpoiler, GzSpoiler(iZ)));
-                        else
-                            seq.addBlock(mr.rotate('z', allAngles(iF), Gx));
-                            GzSpoiler(iZ).delay = 0;
-                            seq.addBlock(mr.rotate('z', allAngles(iF), GxSpoiler, GzSpoiler(iZ)));
-                        end
-                    end
-                end
-                
-                
-                if delayTR > 0
-                    seq.addBlock(mr.makeDelay(delayTR))
-                end
+                    sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );
+                end 
                 
                 RFcounter = RFcounter + 1;
                 
