@@ -1,11 +1,10 @@
 classdef SOSkernel < kernel
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
-    
+           
     properties(Access = private, Constant)        
-        DUMMY_SCANS_TESTING = 5;
-        SPOKES_TESTING_OUTER = 21; 
-        SPOKES_TESTING_INNER = 2
+        DUMMY_SCANS_TESTING = 5         
+        SPOKES_TESTING_INNER = 3
     end
     
     methods
@@ -180,12 +179,13 @@ classdef SOSkernel < kernel
             RfExcitation = obj.protocol.RfExcitation;
             
             % 1. fix the first block (RF, GzCombinedCell, and GxPre)
+            addDelay = mr.calcDuration(RF) - rfRingdownTime;
             if strcmp(RfExcitation,'nonSelective')
-                delay = mr.calcDuration(RF) - rfRingdownTime;
                 for ii =1:size(GzCombinedCell,2)
-                    GzCombinedCell{ii}.delay = GzCombinedCell{ii}.delay + delay; %1.1
+                    GzCombinedCell{ii}.delay = GzCombinedCell{ii}.delay + addDelay; %1.1
                 end
             end
+            GxPre.delay = GxPre.delay + addDelay;
             
             durationGzCombined = mr.calcDuration(GzCombinedCell{1});
             durationGxPre = mr.calcDuration(GxPre);
@@ -197,7 +197,7 @@ classdef SOSkernel < kernel
             
             % 2 fix the second block (GxPlusSpoiler, ADC, GzSpoilersCell)
             % 2.1 add delay to the ADC event to appear at the same time as
-            % the flat region of Gx            
+            % the flat region of Gx
             ADC.delay = GxPlusSpoiler.riseTime;
             % 2.2 add delay to GzSpoliers to appear just after the flat
             % region of GxPlusSpoilers
@@ -292,34 +292,67 @@ classdef SOSkernel < kernel
             end
         end
         
-        function [TE_min, TR_min]  = calculateMinTeTr(obj)
-           %todo 
+        function [TE_min, TR_min, delayTE, delayTR] = calculateMinTeTrAndDelays(obj)
+            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
+            sequenceObject = mr.Sequence();
+            AlignedSeqEvents = alignSeqEvents(obj);
+            RF = AlignedSeqEvents.RF;
+            GzCombinedCell = AlignedSeqEvents.GzCombinedCell;
+            GxPre = AlignedSeqEvents.GxPre;
+            GxPlusSpoiler = AlignedSeqEvents.GxPlusSpoiler;
+            GzSpoilersCell = AlignedSeqEvents.GzSpoilersCell;
+            ADC = AlignedSeqEvents.ADC; 
+            sequenceObject.addBlock(RF, GzCombinedCell{1},GxPre);
+            sequenceObject.addBlock(GxPlusSpoiler, ADC, GzSpoilersCell{1});
+            
+            [duration, ~, ~]=sequenceObject.duration();
+            [ktraj_adc, ~, t_excitation, ~, t_adc] = sequenceObject.calculateKspace();
+            kabs_adc=sum(ktraj_adc.^2,1).^0.5;
+            [~, index_echo]=min(kabs_adc);
+            t_echo=t_adc(index_echo);
+            t_ex_tmp=t_excitation(t_excitation<t_echo);
+            TE_min=t_echo-t_ex_tmp(end);
+            
+            if (length(t_excitation)<2)
+                TR_min=duration; % best estimate for now
+            else
+                t_ex_tmp1=t_excitation(t_excitation>t_echo);
+                if isempty(t_ex_tmp1)
+                    TR_min=t_ex_tmp(end)-t_ex_tmp(end-1);
+                else
+                    TR_min=t_ex_tmp1(1)-t_ex_tmp(end);
+                end                
+            end
+            
+            TE = obj.protocol.TE;
+            TR = obj.protocol.TR;
+                        
+            delayTE = (TE - TE_min);
+            delayTR = (TR - TR_min - delayTE);
+            delayTE = gradRasterTime * round(delayTE/gradRasterTime);
+            delayTR = gradRasterTime * round(delayTR/gradRasterTime);
         end
         
-        function sequenceKernel = createOneSequenceKernel(obj)
-            %todo
-        end
         
         function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario)
+            if nargin < 2
+                scenario = 'writing';            
+            end
             viewOrder = obj.protocol.viewOrder;
             nSpokes = obj.protocol.nSpokes;
             nPartitions = obj.protocol.nPartitions;
             nDummyScans = obj.protocol.nDummyScans;
             spokeAngles = calculateSpokeAngles(obj);
             partRotAngles = calculatePartitionRotationAngles(obj);            
-            switch scenario
-                case 'singleTR'
-                    selectedDummies = 0;
-                    selectedSpokes = 1;
-                    selectedPartitions = 1;
+            switch scenario                
                 case 'testing'
-                    selectedSpokes = 1:obj.SPOKES_TESTING;
+                    selectedDummies = obj.DUMMY_SCANS_TESTING;
                     switch viewOrder
-                        case 'partitionsInOuterLoop' 
-                            selectedDummies = obj.SPOKES_TESTING_OUTER;
+                        case 'partitionsInOuterLoop'
+                            selectedSpokes = 1:nSpokes;
                             selectedPartitions = [1, nPartitions/2 + 1, nPartitions];
                         case 'partitionsInInnerLoop'
-                            selectedDummies = obj.SPOKES_TESTING_INNER;
+                            selectedSpokes = obj.SPOKES_TESTING_INNER;
                             selectedPartitions = 1:nPartitions;
                     end
                 case 'writing'
@@ -360,27 +393,35 @@ classdef SOSkernel < kernel
         end
         
         function sequenceObject = createSequenceObject(obj,scenario)
+            if nargin < 2
+                scenario = 'writing';            
+            end
             isValidated = obj.protocol.isValidated;            
             if ~isValidated
                 msg = 'The input parameters must be validated first.';
                 error(msg)
-            end
+            end            
             
             [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario);            
             RfPhasesRad = calculateRfPhasesRad(obj);
-            [delayTE, delayTR] = calculateTeAndTrDelays(obj);
-            nDummyScans = obj.protocol.nDummyScans;
-            
             AlignedSeqEvents = alignSeqEvents(obj);
             RF = AlignedSeqEvents.RF;
             GzCombinedCell = AlignedSeqEvents.GzCombinedCell;
             GxPre = AlignedSeqEvents.GxPre;
             GxPlusSpoiler = AlignedSeqEvents.GxPlusSpoiler;
             GzSpoilersCell = AlignedSeqEvents.GzSpoilersCell;
-            ADC = AlignedSeqEvents.ADC;
-            
-            % last alignement to have 
+            ADC = AlignedSeqEvents.ADC; 
+            [~, ~, delayTE, delayTR] = calculateMinTeTrAndDelays(obj);
+            % last alignement  
             GxPre.delay = GxPre.delay + delayTE;
+            
+            nDummyScans = obj.protocol.nDummyScans;
+            switch scenario                
+                case 'testing'
+                    selectedDummies = obj.DUMMY_SCANS_TESTING;
+                case'writing'
+                    selectedDummies = nDummyScans;
+            end
             
             sequenceObject = mr.Sequence();
             RFcounter = 1; % to keep track of the number of applied RF pulses.
@@ -391,7 +432,7 @@ classdef SOSkernel < kernel
                 ADC.phaseOffset = RfPhasesRad(RFcounter);
                                 
                     sequenceObject.addBlock( mr.rotate('z', allAngles(iF), RF, GzCombinedCell{iZ},GxPre) );
-                if iF > nDummyScans % include ADC events
+                if iF > selectedDummies % include ADC events
                     sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, ADC, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );                    
                 else % no ADC event
                     sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );
@@ -408,18 +449,19 @@ classdef SOSkernel < kernel
             viewOrder = obj.protocol.viewOrder;
             FOV = obj.protocol.FOV;
             slabThickness = obj.protocol.slabThickness;
-            
+            nSamples = obj.protocol.nSamples;
             obj.giveInfoAboutSequence
             sequenceObject = createSequenceObject(obj,scenario);
             
             if strcmp(scenario,'testing')
                 fprintf('**Testing the sequence with: %s,\n',viewOrder);
-                fprintf('  nDummyScans: %i\n',obj.DUMMY_SCANS_TESTING);
-                fprintf('  nSpokes: %i\n',obj.SPOKES_TESTING);
+                fprintf('  nDummyScans: %i\n',obj.DUMMY_SCANS_TESTING);                
                 if strcmp(viewOrder,'partitionsInOuterLoop')
-                    fprintf('  partitions: first,central, and last\n\n');
+                    fprintf('  nSpokes: %i\n',nSamples);
+                    fprintf('  partitions: first,central, and last\n\n');                                       
                 else
-                    fprintf('  Partitions: all\n\n');
+                    fprintf('  nSpokes: %i\n',obj.SPOKES_TESTING_INNER);
+                    fprintf('  Partitions: all\n\n');                    
                 end
                 giveTestingInfo(obj,sequenceObject);
             end
@@ -450,20 +492,20 @@ classdef SOSkernel < kernel
             sequenceObject.plot();
             % seq.sound();
             
-%             % trajectory calculation
-%             [ktraj_adc, ktraj, t_excitation, t_refocusing, t_adc] = sequenceObject.calculateKspace();
-%             
-%             % plot k-spaces
-%             time_axis = (1:(size(ktraj,2))) * gradRasterTime;
-%             figure; plot(time_axis, ktraj'); % plot the entire k-space trajectory
-%             hold; plot(t_adc,ktraj_adc(1,:),'.'); % and sampling points on the kx-axis
-%             figure; plot(ktraj(1,:),ktraj(2,:),'b'); % a 2D plot
-%             axis('equal'); % enforce aspect ratio for the correct trajectory display
-%             hold; plot(ktraj_adc(1,:),ktraj_adc(2,:),'r.'); % plot the sampling points
-%             
-%             % very optional slow step, but useful for testing during development e.g. for the real TE, TR or for staying within slewrate limits
-%             rep = sequenceObject.testReport;
-%             fprintf([rep{:}]);
+            % trajectory calculation
+            [ktraj_adc, ktraj, t_excitation, t_refocusing, t_adc] = sequenceObject.calculateKspace();
+            
+            % plot k-spaces
+            time_axis = (1:(size(ktraj,2))) * gradRasterTime;
+            figure; plot(time_axis, ktraj'); % plot the entire k-space trajectory
+            hold; plot(t_adc,ktraj_adc(1,:),'.'); % and sampling points on the kx-axis
+            figure; plot(ktraj(1,:),ktraj(2,:),'b'); % a 2D plot
+            axis('equal'); % enforce aspect ratio for the correct trajectory display
+            hold; plot(ktraj_adc(1,:),ktraj_adc(2,:),'r.'); % plot the sampling points
+            
+            % very optional slow step, but useful for testing during development e.g. for the real TE, TR or for staying within slewrate limits
+            rep = sequenceObject.testReport;
+            fprintf([rep{:}]);
         end
         
     end

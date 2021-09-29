@@ -2,7 +2,7 @@ classdef kernel < handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties(Access = private)
+    properties(Hidden)
         protocol (1,1) protocol
     end
     
@@ -66,25 +66,8 @@ classdef kernel < handle
                 GxPlusSpoiler = mr.makeTrapezoid('x','amplitude',Gx.amplitude,'FlatTime',Gx.flatTime + extraFlatTimeNeeded,'system',systemLimits);
             end
             dispersionPerTR = obj.calculatePhaseDispersion(GxPlusSpoiler.area-abs(GxPre.area), obj.protocol.spatialResolution);
-        end
-        
-        function [delayTE, delayTR] = calculateTeAndTrDelays(obj)
-            %calculateTeAndTrDelays calculates the TE and TR delays needed to add some
-            %dead time in the sequence, in order to get the desired TE and TR
-            %when they are not set to the minimum values.
-            
-            %             [TE_min, TR_min] = calculateMinTeTr(obj);
-            %             TE = obj.protocol.TE;
-            %             TR = obj.protocol.TR;
-            %             gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
-            %
-            %             delayTE = ceil( (TE - TE_min) / gradRasterTime ) * gradRasterTime;
-            %             delayTR = ceil( (TR - TR_min - delayTE) / gradRasterTime ) * gradRasterTime;
-            delayTE = 0;
-            delayTR = 0;
-        end
-        
-        
+        end       
+           
     end
     
     

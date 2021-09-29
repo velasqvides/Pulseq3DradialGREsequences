@@ -16,7 +16,7 @@ inputs.slabThickness = 256e-3;  % in meters
 inputs.nSamples = 256;  
 inputs.nPartitions = 256;        
 inputs.nSpokes = 256;                       
-inputs.bandwidthPerPixel = 1667; % in Herz                  
+inputs.bandwidthPerPixel = 1628; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
 inputs.nDummyScans = 335;
@@ -29,7 +29,7 @@ inputs.angularOrdering = 'goldenAngle';     % 'uniform', 'uniformAlternating', '
 inputs.goldenAngleSequence = 1;             % 1: goldeAngle, 2: smallGoldenAngle, >2: tinyGoldenAngles
 inputs.angleRange = 'fullCircle';           % 'fullCircle' or 'halfCircle'
 inputs.partitionRotation = 'goldenAngle';   % 'aligned', 'linear', 'goldenAngle'
-inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
+inputs.viewOrder = 'partitionsInOuterLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
 inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
 inputs.RfPulseDuration = 400e-6;          % use 200e-6 for nonSelective, in seconds
