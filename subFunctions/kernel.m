@@ -43,7 +43,9 @@ classdef kernel < handle
             readoutGradientFlatTime = obj.protocol.readoutGradientFlatTime;
             
             Gx = mr.makeTrapezoid('x','Amplitude',readoutGradientAmplitude,'FlatTime',readoutGradientFlatTime,'system',systemLimits);
-            GxPreArea = -(nSamples * deltaKx)/nSamples*(floor(nSamples/2)) - (Gx.riseTime*Gx.amplitude)/2;            
+            % here I include some area (the last part) to make the trayectory asymmetric
+            % and to measure the cneter ok k-space.
+            GxPreArea = -(nSamples * deltaKx)/nSamples*(floor(nSamples/2)) - (Gx.riseTime*Gx.amplitude)/2 - 0.5*dwellTime*readoutGradientAmplitude;            
             GxPre = mr.makeTrapezoid('x','Area',GxPreArea,'system',systemLimits);
             ADC = mr.makeAdc(nSamples * readoutOversampling,'Dwell',dwellTime,'system',systemLimits);
         end

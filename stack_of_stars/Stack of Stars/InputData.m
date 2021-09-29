@@ -28,7 +28,7 @@ inputs.angularOrdering = 'goldenAngle';     % 'uniform', 'uniformAlternating', '
 inputs.goldenAngleSequence = 1;             % 1: goldeAngle, 2: smallGoldenAngle, >2: tinyGoldenAngles
 inputs.angleRange = 'fullCircle';           % 'fullCircle' or 'halfCircle'
 inputs.partitionRotation = 'goldenAngle';   % 'aligned', 'linear', 'goldenAngle'
-inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
+inputs.viewOrder = 'partitionsInOuterLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
 inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
 inputs.RfPulseDuration = 400e-6;          % use 200e-6 for nonSelective, in seconds

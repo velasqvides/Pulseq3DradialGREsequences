@@ -1,7 +1,8 @@
+tic
 % This script calculates all the sequences events necessary for the imple- 
 % mentation of the sequence. Also, as many calculations as possible are
 % done here before calling the final function to create the sequence.
-
+tic
 % 0. Parameters
 load('parametersSoS'); % Load two struct variables: inputs and systemLimits
 sys = systemLimits;
@@ -44,4 +45,4 @@ save('info4RecoSoS.mat','info4Reco');
 % 7. Create the sequence in .seq format
 mode = 'debuggingMode'; % 'debuggingMode', 'writingMode'
 createSequence(inputs, seqEvents, info, sys, mode);
-
+toc

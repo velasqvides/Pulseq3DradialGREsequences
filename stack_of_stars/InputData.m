@@ -32,7 +32,7 @@ inputs.partitionRotation = 'goldenAngle';   % 'aligned', 'linear', 'goldenAngle'
 inputs.viewOrder = 'partitionsInOuterLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
 inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
-inputs.RfPulseDuration = 400e-6;          % use 200e-6 for nonSelective, in seconds
+inputs.RfPulseDuration = 600e-6;          % use 200e-6 for nonSelective, in seconds
 inputs.RfPulseApodization = 0.5;          % 0: unapodized, 0.46: Haming, 0.5: Hanning
 inputs.timeBwProduct = 2;                 % dimensionless
 % 6. Main system limits
@@ -44,8 +44,8 @@ inputs.systemLimits = mr.opts('MaxGrad', inputs.maxGradient, 'GradUnit', 'mT/m',
     'rfRingdownTime', 20e-6, 'rfDeadTime', 100e-6, ...
     'adcDeadTime', 20e-6);
 % 8. Main operator-selectable parameters
-inputs.TE = 2.21e-3;                             % in seconds
-inputs.TR = 4.36e-3;                             % in seconds
+inputs.TE = 1.45e-3;                             % in seconds
+inputs.TR = 3.04e-3;                             % in seconds
 inputs.flipAngle = 5;                     % in degrees
 
 %% II. Validate the parameters.

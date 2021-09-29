@@ -5,6 +5,7 @@ classdef SOSkernel < kernel
     properties(Access = private, Constant)        
         DUMMY_SCANS_TESTING = 5         
         SPOKES_TESTING_INNER = 2
+        SPOKES_TESTING_OUTER = 21
     end
     
     methods
@@ -350,7 +351,7 @@ classdef SOSkernel < kernel
                     selectedDummies = obj.DUMMY_SCANS_TESTING;
                     switch viewOrder
                         case 'partitionsInOuterLoop'
-                            selectedSpokes = nSpokes;
+                            selectedSpokes = obj.SPOKES_TESTING_OUTER;
                             selectedPartitions = [1, nPartitions/2 + 1, nPartitions];
                         case 'partitionsInInnerLoop'
                             selectedSpokes = obj.SPOKES_TESTING_INNER;

@@ -1,8 +1,9 @@
-
+tic
 a=SOSkernel(inputs);
 % [allAngles, allPartitionIndx] = a.calculateAnglesForAllSpokes('testing');
 % [allAngles, allPartitionIndx] = a.calculateAnglesForAllSpokes('testing');
 a.writeSequence('testing')
+toc
 % [TE_min, TR_min, delayTE, delayTR] =  a.calculateMinTeTrAndDelays
 % G=a.createGzPartitionMax;
 % dispersionDueToGzPartition_max = 2 * pi * a.protocol.partitionThickness * abs(G.area);
