@@ -4,7 +4,7 @@ classdef SOSkernel < kernel
            
     properties(Access = private, Constant)        
         DUMMY_SCANS_TESTING = 5         
-        SPOKES_TESTING_INNER = 3
+        SPOKES_TESTING_INNER = 2
     end
     
     methods
@@ -301,7 +301,8 @@ classdef SOSkernel < kernel
             GxPre = AlignedSeqEvents.GxPre;
             GxPlusSpoiler = AlignedSeqEvents.GxPlusSpoiler;
             GzSpoilersCell = AlignedSeqEvents.GzSpoilersCell;
-            ADC = AlignedSeqEvents.ADC; 
+            ADC = AlignedSeqEvents.ADC;
+            % add events for single TR with no delays 
             sequenceObject.addBlock(RF, GzCombinedCell{1},GxPre);
             sequenceObject.addBlock(GxPlusSpoiler, ADC, GzSpoilersCell{1});
             
@@ -349,7 +350,7 @@ classdef SOSkernel < kernel
                     selectedDummies = obj.DUMMY_SCANS_TESTING;
                     switch viewOrder
                         case 'partitionsInOuterLoop'
-                            selectedSpokes = 1:nSpokes;
+                            selectedSpokes = nSpokes;
                             selectedPartitions = [1, nPartitions/2 + 1, nPartitions];
                         case 'partitionsInInnerLoop'
                             selectedSpokes = obj.SPOKES_TESTING_INNER;
@@ -357,16 +358,16 @@ classdef SOSkernel < kernel
                     end
                 case 'writing'
                     selectedDummies = nDummyScans;
-                    selectedSpokes = 1:nSpokes;
+                    selectedSpokes = nSpokes;
                     selectedPartitions = 1:nPartitions;
             end
             counter = 1;
-            angles = zeros(1, length(selectedSpokes) * length(selectedPartitions));
-            partitionIndx = zeros(1, length(selectedSpokes) * length(selectedPartitions));
+            angles = zeros(1, selectedSpokes * length(selectedPartitions));
+            partitionIndx = zeros(1, selectedSpokes * length(selectedPartitions));
             switch viewOrder
                 case 'partitionsInOuterLoop'
                     for iZ=selectedPartitions
-                        for iR=selectedSpokes
+                        for iR=1:selectedSpokes
                             angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
                             partitionIndx(counter) = iZ;
                             counter = counter + 1;
@@ -374,7 +375,7 @@ classdef SOSkernel < kernel
                     end
                     
                 case 'partitionsInInnerLoop'
-                    for iR=selectedSpokes
+                    for iR=1:selectedSpokes
                         for iZ=selectedPartitions
                             angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
                             partitionIndx(counter) = iZ;

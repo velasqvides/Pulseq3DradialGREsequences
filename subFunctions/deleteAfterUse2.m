@@ -1,6 +1,7 @@
 
 a=SOSkernel(inputs);
 % [allAngles, allPartitionIndx] = a.calculateAnglesForAllSpokes('testing');
+% [allAngles, allPartitionIndx] = a.calculateAnglesForAllSpokes('testing');
 a.writeSequence('testing')
 % [TE_min, TR_min, delayTE, delayTR] =  a.calculateMinTeTrAndDelays
 % G=a.createGzPartitionMax;
