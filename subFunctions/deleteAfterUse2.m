@@ -1,5 +1,6 @@
 
 a=SOSkernel(inputs);
+% [allAngles, allPartitionIndx] = a.calculateAnglesForAllSpokes('testing');
 a.writeSequence('testing')
 % G=a.createGzPartitionMax;
 % dispersionDueToGzPartition_max = 2 * pi * a.protocol.partitionThickness * abs(G.area);

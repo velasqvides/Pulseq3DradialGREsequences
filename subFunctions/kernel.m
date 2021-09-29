@@ -2,7 +2,7 @@ classdef kernel < handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties(Access = private)
         protocol (1,1) protocol
     end
     

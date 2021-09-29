@@ -2,9 +2,10 @@ classdef SOSkernel < kernel
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties(Access = private, Constant)
+    properties(Access = private, Constant)        
         DUMMY_SCANS_TESTING = 5;
-        SPOKES_TESTING = 15;
+        SPOKES_TESTING_OUTER = 21; 
+        SPOKES_TESTING_INNER = 2
     end
     
     methods
@@ -312,13 +313,13 @@ classdef SOSkernel < kernel
                     selectedSpokes = 1;
                     selectedPartitions = 1;
                 case 'testing'
-                    selectedDummies = obj.DUMMY_SCANS_TESTING;
+                    selectedSpokes = 1:obj.SPOKES_TESTING;
                     switch viewOrder
-                        case 'partitionsInOuterLoop'
-                            selectedSpokes = 1:obj.SPOKES_TESTING;
+                        case 'partitionsInOuterLoop' 
+                            selectedDummies = obj.SPOKES_TESTING_OUTER;
                             selectedPartitions = [1, nPartitions/2 + 1, nPartitions];
                         case 'partitionsInInnerLoop'
-                            selectedSpokes = 1:obj.SPOKES_TESTING;
+                            selectedDummies = obj.SPOKES_TESTING_INNER;
                             selectedPartitions = 1:nPartitions;
                     end
                 case 'writing'
@@ -327,12 +328,12 @@ classdef SOSkernel < kernel
                     selectedPartitions = 1:nPartitions;
             end
             counter = 1;
-            angles = zeros(1, selectedSpokes * selectedPartitions);
-            partitionIndx = zeros(1, selectedSpokes * selectedPartitions);
+            angles = zeros(1, length(selectedSpokes) * length(selectedPartitions));
+            partitionIndx = zeros(1, length(selectedSpokes) * length(selectedPartitions));
             switch viewOrder
                 case 'partitionsInOuterLoop'
-                    for iZ=1:nPartitions
-                        for iR=1:nSpokes
+                    for iZ=selectedPartitions
+                        for iR=selectedSpokes
                             angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
                             partitionIndx(counter) = iZ;
                             counter = counter + 1;
@@ -340,8 +341,8 @@ classdef SOSkernel < kernel
                     end
                     
                 case 'partitionsInInnerLoop'
-                    for iR=1:nSpokes
-                        for iZ=1:nPartitions
+                    for iR=selectedSpokes
+                        for iZ=selectedPartitions
                             angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
                             partitionIndx(counter) = iZ;
                             counter = counter + 1;
@@ -350,8 +351,8 @@ classdef SOSkernel < kernel
             end
             
             if selectedDummies > 0
-                allAngles = [angles(1:nDummyScans) angles]; % replicate the first nDummyScans angles for the dummy scans
-                allPartitionIndx = [partitionIndx(1:nDummyScans) partitionIndx]; % replicate the first partitionIndx indexes for the dummy scans
+                allAngles = [angles(1:selectedDummies) angles]; % replicate the first nDummyScans angles for the dummy scans
+                allPartitionIndx = [partitionIndx(1:selectedDummies) partitionIndx]; % replicate the first partitionIndx indexes for the dummy scans
             else
                 allAngles = angles;
                 allPartitionIndx = partitionIndx;
@@ -399,23 +400,7 @@ classdef SOSkernel < kernel
                 RFcounter = RFcounter + 1;                
             end 
         end
-        
-        function simulateSequence(obj) 
-            
-            viewOrder = obj.protocol.viewOrder;
-             
-            fprintf('**Testing the sequence with: %s,\n',viewOrder);
-            fprintf('  nDummyScans: %i\n',obj.DUMMY_SCANS_TESTING);
-            fprintf('  nSpokes: %i\n',obj.SPOKES_TESTING);
-            if strcmp(viewOrder,'partitionsInOuterLoop')
-                fprintf('  partitions: first,central, and last\n\n');
-            else
-                fprintf('  Partitions: all\n\n');
-            end
-            writeSequence(newObj);
-            giveTestingInfo(newObj)
-        end
-        
+               
         function writeSequence(obj,scenario)
             if nargin < 2
                 scenario = 'writing';            
@@ -465,20 +450,20 @@ classdef SOSkernel < kernel
             sequenceObject.plot();
             % seq.sound();
             
-            % trajectory calculation
-            [ktraj_adc, ktraj, t_excitation, t_refocusing, t_adc] = sequenceObject.calculateKspace();
-            
-            % plot k-spaces
-            time_axis = (1:(size(ktraj,2))) * gradRasterTime;
-            figure; plot(time_axis, ktraj'); % plot the entire k-space trajectory
-            hold; plot(t_adc,ktraj_adc(1,:),'.'); % and sampling points on the kx-axis
-            figure; plot(ktraj(1,:),ktraj(2,:),'b'); % a 2D plot
-            axis('equal'); % enforce aspect ratio for the correct trajectory display
-            hold; plot(ktraj_adc(1,:),ktraj_adc(2,:),'r.'); % plot the sampling points
-            
-            % very optional slow step, but useful for testing during development e.g. for the real TE, TR or for staying within slewrate limits
-            rep = sequenceObject.testReport;
-            fprintf([rep{:}]);
+%             % trajectory calculation
+%             [ktraj_adc, ktraj, t_excitation, t_refocusing, t_adc] = sequenceObject.calculateKspace();
+%             
+%             % plot k-spaces
+%             time_axis = (1:(size(ktraj,2))) * gradRasterTime;
+%             figure; plot(time_axis, ktraj'); % plot the entire k-space trajectory
+%             hold; plot(t_adc,ktraj_adc(1,:),'.'); % and sampling points on the kx-axis
+%             figure; plot(ktraj(1,:),ktraj(2,:),'b'); % a 2D plot
+%             axis('equal'); % enforce aspect ratio for the correct trajectory display
+%             hold; plot(ktraj_adc(1,:),ktraj_adc(2,:),'r.'); % plot the sampling points
+%             
+%             % very optional slow step, but useful for testing during development e.g. for the real TE, TR or for staying within slewrate limits
+%             rep = sequenceObject.testReport;
+%             fprintf([rep{:}]);
         end
         
     end
