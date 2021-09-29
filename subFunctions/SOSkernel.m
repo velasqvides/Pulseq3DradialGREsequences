@@ -2,8 +2,9 @@ classdef SOSkernel < kernel
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
-        Property1
+    properties(Access = private, Constant)
+        DUMMY_SCANS_TESTING = 5;
+        SPOKES_TESTING = 15;
     end
     
     methods
@@ -298,19 +299,38 @@ classdef SOSkernel < kernel
             %todo
         end
         
-        function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj)
+        function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario)
             viewOrder = obj.protocol.viewOrder;
             nSpokes = obj.protocol.nSpokes;
             nPartitions = obj.protocol.nPartitions;
             nDummyScans = obj.protocol.nDummyScans;
             spokeAngles = calculateSpokeAngles(obj);
-            partRotAngles = calculatePartitionRotationAngles(obj);
-            
+            partRotAngles = calculatePartitionRotationAngles(obj);            
+            switch scenario
+                case 'singleTR'
+                    selectedDummies = 0;
+                    selectedSpokes = 1;
+                    selectedPartitions = 1;
+                case 'testing'
+                    selectedDummies = obj.DUMMY_SCANS_TESTING;
+                    switch viewOrder
+                        case 'partitionsInOuterLoop'
+                            selectedSpokes = 1:obj.SPOKES_TESTING;
+                            selectedPartitions = [1, nPartitions/2 + 1, nPartitions];
+                        case 'partitionsInInnerLoop'
+                            selectedSpokes = 1:obj.SPOKES_TESTING;
+                            selectedPartitions = 1:nPartitions;
+                    end
+                case 'writing'
+                    selectedDummies = nDummyScans;
+                    selectedSpokes = 1:nSpokes;
+                    selectedPartitions = 1:nPartitions;
+            end
             counter = 1;
-            angles = zeros(1, nSpokes * nPartitions);
-            partitionIndx = zeros(1, nSpokes * nPartitions);
+            angles = zeros(1, selectedSpokes * selectedPartitions);
+            partitionIndx = zeros(1, selectedSpokes * selectedPartitions);
             switch viewOrder
-                case 'partitionsInOuterLoop'                    
+                case 'partitionsInOuterLoop'
                     for iZ=1:nPartitions
                         for iR=1:nSpokes
                             angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
@@ -318,7 +338,8 @@ classdef SOSkernel < kernel
                             counter = counter + 1;
                         end
                     end
-                case 'partitionsInInnerLoop'                    
+                    
+                case 'partitionsInInnerLoop'
                     for iR=1:nSpokes
                         for iZ=1:nPartitions
                             angles(counter) = spokeAngles(iR) + partRotAngles(iZ);
@@ -328,7 +349,7 @@ classdef SOSkernel < kernel
                     end
             end
             
-            if nDummyScans > 0
+            if selectedDummies > 0
                 allAngles = [angles(1:nDummyScans) angles]; % replicate the first nDummyScans angles for the dummy scans
                 allPartitionIndx = [partitionIndx(1:nDummyScans) partitionIndx]; % replicate the first partitionIndx indexes for the dummy scans
             else
@@ -337,14 +358,14 @@ classdef SOSkernel < kernel
             end
         end
         
-        function sequenceObject = createSequenceObject(obj)
+        function sequenceObject = createSequenceObject(obj,scenario)
             isValidated = obj.protocol.isValidated;            
             if ~isValidated
                 msg = 'The input parameters must be validated first.';
                 error(msg)
             end
             
-            [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj);            
+            [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario);            
             RfPhasesRad = calculateRfPhasesRad(obj);
             [delayTE, delayTR] = calculateTeAndTrDelays(obj);
             nDummyScans = obj.protocol.nDummyScans;
@@ -379,37 +400,51 @@ classdef SOSkernel < kernel
             end 
         end
         
-        function simulateSequence(obj)            
+        function simulateSequence(obj) 
+            
             viewOrder = obj.protocol.viewOrder;
-            newObj = obj;
-            
-            newObj.protocol.nDummyScans = 5;
-            newObj.protocol.nPartitions = 5;
-            switch viewOrder                
-            case 'partitionsInOuterLoop'
-                newObj.protocol.nSpokes = 15; 
-            case 'partitionsInInnerLoop'
-                newObj.protocol.nSpokes = 15;                
-            end
+             
             fprintf('**Testing the sequence with: %s,\n',viewOrder);
-            fprintf('  nDummyScans: %i\n',newObj.protocol.nDummyScans);
-            fprintf('  nSpokes: %i\n',newObj.protocol.nSpokes);
-            fprintf('  nPartitions: %i\n\n',newObj.protocol.nPartitions);
-            
+            fprintf('  nDummyScans: %i\n',obj.DUMMY_SCANS_TESTING);
+            fprintf('  nSpokes: %i\n',obj.SPOKES_TESTING);
+            if strcmp(viewOrder,'partitionsInOuterLoop')
+                fprintf('  partitions: first,central, and last\n\n');
+            else
+                fprintf('  Partitions: all\n\n');
+            end
             writeSequence(newObj);
             giveTestingInfo(newObj)
         end
         
-        function writeSequence(obj)
+        function writeSequence(obj,scenario)
+            if nargin < 2
+                scenario = 'writing';            
+            end
+            viewOrder = obj.protocol.viewOrder;
             FOV = obj.protocol.FOV;
             slabThickness = obj.protocol.slabThickness;
-            sequenceObject = createSequenceObject(obj);
+            
+            obj.giveInfoAboutSequence
+            sequenceObject = createSequenceObject(obj,scenario);
+            
+            if strcmp(scenario,'testing')
+                fprintf('**Testing the sequence with: %s,\n',viewOrder);
+                fprintf('  nDummyScans: %i\n',obj.DUMMY_SCANS_TESTING);
+                fprintf('  nSpokes: %i\n',obj.SPOKES_TESTING);
+                if strcmp(viewOrder,'partitionsInOuterLoop')
+                    fprintf('  partitions: first,central, and last\n\n');
+                else
+                    fprintf('  Partitions: all\n\n');
+                end
+                giveTestingInfo(obj,sequenceObject);
+            end
             
             sequenceObject.setDefinition('FOV', [FOV FOV slabThickness]);
             sequenceObject.setDefinition('Name', '3D_radial_stackOfStars');
             sequenceObject.write('3D_radial_stackOfStars.seq');
             saveInfo4Reco(obj);
-            obj.giveInfoAboutSequence
+            
+            fprintf('## ...Done\n');            
         end
         
         function saveInfo4Reco(obj)
@@ -424,9 +459,9 @@ classdef SOSkernel < kernel
             save('info4RecoSoS.mat','info4Reco');
         end
         
-        function giveTestingInfo(obj)
+        function giveTestingInfo(obj,sequenceObject)
             gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
-            sequenceObject = createSequenceObject(obj);
+            
             sequenceObject.plot();
             % seq.sound();
             
@@ -453,7 +488,6 @@ classdef SOSkernel < kernel
             fprintf('## Creating the sequence...\n');
             fprintf('**GzReph and GzPartition are merged.\n');
             fprintf('**G_readout and G_readoutSpoiler are merged.\n');
-            fprintf('## ...Done\n');
         end
    end
     
