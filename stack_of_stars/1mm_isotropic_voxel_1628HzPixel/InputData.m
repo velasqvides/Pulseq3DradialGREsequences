@@ -1,12 +1,6 @@
-% This Script gathers all the necessary information to create a 3D stack of
-% stars sequence.
-% Most of the inputs are validated in a first stage to check basic 
-% consitency, then deeper validation is performed to see if the intended  
-% resolution and contrast can be achieved. Messages are given in the 
-% command window in case that some parameter is modified. 
-%  
+% This Script gathers all the necessary information to create a 3D GRE 
+% stack of stars sequence. 
 clear variables 
-clc
 % create class SOSprotocol
 inputs = SOSprotocol(); 
 %% I. data collection
@@ -19,7 +13,7 @@ inputs.nSpokes = 256;
 inputs.bandwidthPerPixel = 1628; % in Herz                  
 inputs.readoutOversampling = 2;  % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
-inputs.nDummyScans = 335;
+inputs.nDummyScans = 469;
 % 3. Spoling strategy 
 inputs.phaseDispersionReadout = 2 * pi;     % desired phase dispersion along readout;
 inputs.phaseDispersionZ = 2 * pi;           % desired phase dispersion along z;  
@@ -29,10 +23,10 @@ inputs.angularOrdering = 'goldenAngle';     % 'uniform', 'uniformAlternating', '
 inputs.goldenAngleSequence = 1;             % 1: goldeAngle, 2: smallGoldenAngle, >2: tinyGoldenAngles
 inputs.angleRange = 'fullCircle';           % 'fullCircle' or 'halfCircle'
 inputs.partitionRotation = 'goldenAngle';   % 'aligned', 'linear', 'goldenAngle'
-inputs.viewOrder = 'partitionsInOuterLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
+inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
-inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
-inputs.RfPulseDuration = 600e-6;          % use 200e-6 for nonSelective, in seconds
+inputs.RfExcitation = 'nonSelective';    % 'nonSelective', 'selectiveSinc'
+inputs.RfPulseDuration = 400e-6;          % use 200e-6 for nonSelective, in seconds
 inputs.RfPulseApodization = 0.5;          % 0: unapodized, 0.46: Haming, 0.5: Hanning
 inputs.timeBwProduct = 2;                 % dimensionless
 % 6. Main system limits
@@ -45,16 +39,18 @@ inputs.systemLimits = mr.opts('MaxGrad', inputs.maxGradient, 'GradUnit', 'mT/m',
     'adcDeadTime', 20e-6);
 % 8. Main operator-selectable parameters
 inputs.TE = 1.45e-3;                             % in seconds
-inputs.TR = 3.04e-3;                             % in seconds
-inputs.flipAngle = 5;                     % in degrees
+inputs.TR = 2.87e-3;                             % in seconds
+inputs.flipAngle = 5;                            % in degrees
 
 %% II. Validate the parameters.
-inputs.validateProtocol
 % Optionally, get an idea of the necessary number of dummy scans 
-T1 = 1284e-3; % T1 for white matter at 7T
-error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
-inputs.estimateNdummyScans(T1,error);
-% clear T1 error;
+inputs.T1 = 1284e-3; % T1 for white matter at 7T
+inputs.error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
+inputs.validateProtocol
 
+%% III. Test the sequence.
+return
+mySOS = SOSkernel(inputs);
+mySOS.writeSequence('testing');
 
 

@@ -2,11 +2,12 @@ classdef kernel < handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties(Hidden)
+    properties(Access = protected)
         protocol (1,1) protocol
     end
     
     methods
+        
         function obj = kernel(inputProtocol)
             obj.protocol = inputProtocol;
         end
@@ -44,7 +45,7 @@ classdef kernel < handle
             
             Gx = mr.makeTrapezoid('x','Amplitude',readoutGradientAmplitude,'FlatTime',readoutGradientFlatTime,'system',systemLimits);
             % here I include some area (the last part) to make the trayectory asymmetric
-            % and to measure the cneter ok k-space.
+            % and to measure the center ok k-space.
             GxPreArea = -(nSamples * deltaKx)/nSamples*(floor(nSamples/2)) - (Gx.riseTime*Gx.amplitude)/2 - 0.5*dwellTime*readoutGradientAmplitude;            
             GxPre = mr.makeTrapezoid('x','Area',GxPreArea,'system',systemLimits);
             ADC = mr.makeAdc(nSamples * readoutOversampling,'Dwell',dwellTime,'system',systemLimits);

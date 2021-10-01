@@ -155,12 +155,13 @@ classdef SOSkernel < kernel
         function SeqEvents = collectSequenceEvents(obj)
             [RF, ~, ~] = createSlabSelectionEvents(obj);
             GzCombinedCell = combineGzWithGzRephPlusPartitions(obj);
-            [~, GxPre, ADC] = createReadoutEvents(obj);
+            [Gx, GxPre, ADC] = createReadoutEvents(obj);
             [GxPlusSpoiler,~] = createGxPlusSpoiler(obj);
             [GzSpoilersCell, ~] = createGzSpoilers(obj);
             
             SeqEvents.RF = RF;
             SeqEvents.GzCombinedCell = GzCombinedCell;
+            SeqEvents.Gx = Gx;
             SeqEvents.GxPre = GxPre;
             SeqEvents.GxPlusSpoiler = GxPlusSpoiler;
             SeqEvents.GzSpoilersCell = GzSpoilersCell;
@@ -171,6 +172,7 @@ classdef SOSkernel < kernel
             SeqEvents = collectSequenceEvents(obj);
             RF = SeqEvents.RF;
             GzCombinedCell = SeqEvents.GzCombinedCell;
+            Gx = SeqEvents.Gx;
             GxPre = SeqEvents.GxPre;
             GxPlusSpoiler = SeqEvents.GxPlusSpoiler;
             GzSpoilersCell = SeqEvents.GzSpoilersCell;
@@ -201,13 +203,14 @@ classdef SOSkernel < kernel
             % the flat region of Gx
             ADC.delay = GxPlusSpoiler.riseTime;
             % 2.2 add delay to GzSpoliers to appear just after the flat
-            % region of GxPlusSpoilers
-            addDelay = GxPlusSpoiler.riseTime + GxPlusSpoiler.flatTime;
+            % region of Gx
+            addDelay = Gx.riseTime + Gx.flatTime;
             for kk=1:size(GzSpoilersCell,2)
                 GzSpoilersCell{kk}.delay = GzSpoilersCell{kk}.delay + addDelay; % GzSpoiler can appear after flat region of Gx in the same block
             end
             
-            % return the aligned events in a struct
+            % return the aligned events in a struct, from here
+            % Gx is not neccesary anymore,  
             AlignedSeqEvents.RF = RF;
             AlignedSeqEvents.GzCombinedCell = GzCombinedCell;
             AlignedSeqEvents.GxPre = GxPre;
@@ -293,9 +296,9 @@ classdef SOSkernel < kernel
             end
         end
         
-        function [TE_min, TR_min, delayTE, delayTR] = calculateMinTeTrAndDelays(obj)
+        function [TE_min, TR_min] = calculateMinTeTr(obj)
             gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
-            sequenceObject = mr.Sequence();
+            thisSeqObject = mr.Sequence();
             AlignedSeqEvents = alignSeqEvents(obj);
             RF = AlignedSeqEvents.RF;
             GzCombinedCell = AlignedSeqEvents.GzCombinedCell;
@@ -303,18 +306,18 @@ classdef SOSkernel < kernel
             GxPlusSpoiler = AlignedSeqEvents.GxPlusSpoiler;
             GzSpoilersCell = AlignedSeqEvents.GzSpoilersCell;
             ADC = AlignedSeqEvents.ADC;
-            % add events for single TR with no delays 
-            sequenceObject.addBlock(RF, GzCombinedCell{1},GxPre);
-            sequenceObject.addBlock(GxPlusSpoiler, ADC, GzSpoilersCell{1});
+            % add events for a single TR with no delays 
+            thisSeqObject.addBlock(RF, GzCombinedCell{1},GxPre);
+            thisSeqObject.addBlock(GxPlusSpoiler, ADC, GzSpoilersCell{1});
             
-            [duration, ~, ~]=sequenceObject.duration();
-            [ktraj_adc, ~, t_excitation, ~, t_adc] = sequenceObject.calculateKspace();
-            kabs_adc=sum(ktraj_adc.^2,1).^0.5;
-            [~, index_echo]=min(kabs_adc);
-            t_echo=t_adc(index_echo);
-            t_ex_tmp=t_excitation(t_excitation<t_echo);
-            TE_min=t_echo-t_ex_tmp(end);
-            
+            [duration, ~, ~] = thisSeqObject.duration();
+            [ktraj_adc, ~, t_excitation, ~, t_adc] = thisSeqObject.calculateKspace();
+            kabs_adc = sum(ktraj_adc.^2,1).^0.5;
+            [~, index_echo] = min(kabs_adc);
+            t_echo = t_adc(index_echo);
+            t_ex_tmp = t_excitation(t_excitation<t_echo);
+            TE_min = t_echo-t_ex_tmp(end);
+                        
             if (length(t_excitation)<2)
                 TR_min=duration; % best estimate for now
             else
@@ -326,15 +329,22 @@ classdef SOSkernel < kernel
                 end                
             end
             
-            TE = obj.protocol.TE;
-            TR = obj.protocol.TR;
-                        
-            delayTE = (TE - TE_min);
-            delayTR = (TR - TR_min - delayTE);
-            delayTE = gradRasterTime * round(delayTE/gradRasterTime);
-            delayTR = gradRasterTime * round(delayTR/gradRasterTime);
+            TE_min = gradRasterTime*ceil(TE_min/gradRasterTime); 
+            TR_min = gradRasterTime*ceil(TR_min/gradRasterTime);
         end
         
+        function [delayTE, delayTR] = calculateDelays(obj)
+            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
+            TE = obj.protocol.TE;
+            TR = obj.protocol.TR;
+            [TE_min, TR_min] = calculateMinTeTr(obj);
+            % the four values have been rounded to the gradient raster time
+            % before, so it is not neccesary to round them more here.
+            delayTE = (TE - TE_min);
+            delayTE = gradRasterTime*round(delayTE/gradRasterTime);
+            delayTR = (TR - TR_min - delayTE);            
+            delayTR = gradRasterTime*round(delayTR/gradRasterTime);
+        end
         
         function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario)
             if nargin < 2
@@ -413,16 +423,15 @@ classdef SOSkernel < kernel
             GxPlusSpoiler = AlignedSeqEvents.GxPlusSpoiler;
             GzSpoilersCell = AlignedSeqEvents.GzSpoilersCell;
             ADC = AlignedSeqEvents.ADC; 
-            [~, ~, delayTE, delayTR] = calculateMinTeTrAndDelays(obj);
+            [delayTE, delayTR] = calculateDelays(obj);
             % last alignement  
             GxPre.delay = GxPre.delay + delayTE;
             
-            nDummyScans = obj.protocol.nDummyScans;
             switch scenario                
                 case 'testing'
                     selectedDummies = obj.DUMMY_SCANS_TESTING;
                 case'writing'
-                    selectedDummies = nDummyScans;
+                    selectedDummies = obj.protocol.nDummyScans;
             end
             
             sequenceObject = mr.Sequence();
@@ -452,7 +461,8 @@ classdef SOSkernel < kernel
             FOV = obj.protocol.FOV;
             slabThickness = obj.protocol.slabThickness;
             nSamples = obj.protocol.nSamples;
-            obj.giveInfoAboutSequence
+            
+            obj.giveInfoAboutSequence;
             sequenceObject = createSequenceObject(obj,scenario);
             
             if strcmp(scenario,'testing')

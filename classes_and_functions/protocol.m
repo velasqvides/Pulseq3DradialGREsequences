@@ -6,28 +6,30 @@ classdef protocol < handle
         FOV (1,1) double {mustBeNumeric, mustBePositive}=256e-3
         nSamples (1,1) {mustBeNumeric, mustBeInteger, mustBePositive}=256
         nSpokes (1,1) {mustBeNumeric, mustBeInteger, mustBePositive}=256
-        bandwidthPerPixel (1,1) double {mustBeNumeric, mustBeInteger, mustBePositive}=1667
+        bandwidthPerPixel (1,1) double {mustBeNumeric, mustBeInteger, mustBePositive}=1628
         readoutOversampling (1,1) {mustBeMember(readoutOversampling, [1, 2])}=2
-        nDummyScans (1,1) {mustBeNumeric, mustBeInteger, mustBeNonnegative}=468
+        nDummyScans (1,1) {mustBeNumeric, mustBeInteger, mustBeNonnegative}=450
         phaseDispersionReadout (1,1) double {mustBeNumeric, mustBeNonnegative}=2*pi
         RfSpoilingIncrement (1,1) double {mustBeNumeric, mustBeNonnegative}=117
         RfExcitation string {mustBeMember(RfExcitation, {'selectiveSinc','nonSelective'})}='selectiveSinc'
         RfPulseDuration(1,1) double {mustBeNumeric, mustBePositive}=400e-6
-        RfPulseApodization (1,1) double {mustBeMember(RfPulseApodization, [0, 0.2, 0.46, 0.5])}=0.5
+        RfPulseApodization (1,1) double {mustBeMember(RfPulseApodization, [0, 0.46, 0.5])}=0.5
         timeBwProduct (1,1) double {mustBeNumeric, mustBePositive}=2
         maxGradient  (1,1) double {mustBeGreaterThan(maxGradient,0), mustBeLessThan(maxGradient,73)}=50
         maxSlewRate  (1,1) double {mustBeGreaterThan(maxSlewRate,0), mustBeLessThan(maxSlewRate,201)}=150
         flipAngle (1,1) double {mustBeGreaterThan(flipAngle,0), mustBeLessThan(flipAngle,90)}=5
-        TE (1,1) double {mustBeNumeric}=2.21e-3
-        TR (1,1) double {mustBeNumeric}=4.36e-3
+        TE (1,1) double {mustBeNumeric}=1.45e-3
+        TR (1,1) double {mustBeNumeric}=3.04e-3
         systemLimits (1,1) struct
+        T1 (1,1) double {mustBeNumeric, mustBePositive}=1284e-3
+        error (1,1) double {mustBeNumeric, mustBePositive}=0.10
     end
     
     properties(Hidden)    
     isValidated = false;
     end
         
-    properties(Access = private, Constant)
+    properties(Hidden, Constant)
         nSamples_min = 64
         nSamples_max = 1024;
         FOV_min = 10e-3
@@ -35,7 +37,7 @@ classdef protocol < handle
         bandwidthPerPixel_min = 100
         bandwidthPerPixel_max = 2000;
         spatialResolution_max = 0.2e-3;
-        TR_max = 100e-3
+        TR_max = 100e-3 % make sure this value is multiple of the gradRaster time (10e-6)
         ADCrasterTime = 0.1e-6; % ADC raster time for Siemens machines as I understand
     end
     
@@ -81,20 +83,20 @@ classdef protocol < handle
             readoutGradientFlatTime = (gradRasterTime) * ceil( obj.readoutDuration / (gradRasterTime) );
         end
         
-        function estimateNdummyScans(obj,T1,error)
+        function estimateNdummyScans(obj)
             flipAngleRad = obj.flipAngle * pi / 180;
             % eq. (9.22) of the book.
-            requieredDummyScans =  log( (error)*(1 - exp(-obj.TR/T1)) / (1 - cos(flipAngleRad)) ) /...
-                log( cos(flipAngleRad) * exp(-obj.TR/T1) );
+            requieredDummyScans =  log( (obj.error)*(1 - exp(-obj.TR/obj.T1)) / (1 - cos(flipAngleRad)) ) /...
+                log( cos(flipAngleRad) * exp(-obj.TR/obj.T1) );
             
             requieredDummyScans = round(requieredDummyScans);
-            error = error * 100;
+            errorPercentage = obj.error * 100;
             
             if obj.nDummyScans == requieredDummyScans
                 fprintf('**The number of dummy scans seems to be optimal.\n\n')
             else    
                 fprintf('**For the current TR and flip angle, the Suggested # of dummy scans to have a signal within\n')
-                fprintf('%4.2f%% of the steady-sate value is: %i. Current value: %i.\n\n',error, requieredDummyScans,obj.nDummyScans)
+                fprintf('%4.2f%% of the steady-sate value is: %i. Current value: %i.\n\n',errorPercentage, requieredDummyScans,obj.nDummyScans)
             end
         end
         
