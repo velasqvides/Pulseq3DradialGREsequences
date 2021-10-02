@@ -32,7 +32,7 @@ classdef kernel < handle
                     Gz = []; GzReph = [];
             end
             
-        end
+        end % end of createSlabSelectionEvents
         
         function [Gx, GxPre, ADC] = createReadoutEvents(obj)
             nSamples = obj.protocol.nSamples;
@@ -43,13 +43,15 @@ classdef kernel < handle
             readoutGradientAmplitude = obj.protocol.readoutGradientAmplitude;
             readoutGradientFlatTime = obj.protocol.readoutGradientFlatTime;
             
-            Gx = mr.makeTrapezoid('x','Amplitude',readoutGradientAmplitude,'FlatTime',readoutGradientFlatTime,'system',systemLimits);
-            % here I include some area (the last part) to make the trayectory asymmetric
+            Gx = mr.makeTrapezoid('x','Amplitude',readoutGradientAmplitude,'FlatTime',...
+                readoutGradientFlatTime,'system',systemLimits);
+            % here I include some area (the last term) to make the trayectory asymmetric
             % and to measure the center ok k-space.
-            GxPreArea = -(nSamples * deltaKx)/nSamples*(floor(nSamples/2)) - (Gx.riseTime*Gx.amplitude)/2 - 0.5*dwellTime*readoutGradientAmplitude;            
+            GxPreArea = -(nSamples * deltaKx)/nSamples*(floor(nSamples/2)) - ...
+                (Gx.riseTime*Gx.amplitude)/2 - 0.5*dwellTime*readoutGradientAmplitude;            
             GxPre = mr.makeTrapezoid('x','Area',GxPreArea,'system',systemLimits);
             ADC = mr.makeAdc(nSamples * readoutOversampling,'Dwell',dwellTime,'system',systemLimits);
-        end
+        end % end of createReadoutEvents
         
         function [GxPlusSpoiler,dispersionPerTR] = createGxPlusSpoiler(obj)
             [Gx, GxPre, ~] = createReadoutEvents(obj);
@@ -64,14 +66,18 @@ classdef kernel < handle
                 GxPlusSpoiler = Gx; % add no extra area
             else
                 areaSpoilingX = phaseDispersionReadout / (2 * pi * spatialResolution);
-                extraAreaNeeded = areaSpoilingX - areaGxAfterTE;
+                extraAreaNeeded = areaSpoilingX - areaGxAfterTE;                
                 extraFlatTimeNeeded = gradRasterTime * round((extraAreaNeeded / Gx.amplitude)/ gradRasterTime);
-                GxPlusSpoiler = mr.makeTrapezoid('x','amplitude',Gx.amplitude,'FlatTime',Gx.flatTime + extraFlatTimeNeeded,'system',systemLimits);
+                GxPlusSpoiler = mr.makeTrapezoid('x','amplitude',Gx.amplitude,'FlatTime', ...
+                    Gx.flatTime + extraFlatTimeNeeded,'system',systemLimits);
             end
-            dispersionPerTR = obj.calculatePhaseDispersion(GxPlusSpoiler.area-abs(GxPre.area), obj.protocol.spatialResolution);
-        end       
+            % since the extra flat time need to comply with the gradRaster time,
+            % the exact desired phase dispersion cant be acchieved, but it will be close enough.
+            dispersionPerTR = obj.calculatePhaseDispersion(GxPlusSpoiler.area-abs(GxPre.area), ...
+                obj.protocol.spatialResolution);
+        end % end GxPlusSpoiler       
            
-    end
+    end % end methods
     
     
     methods(Static)
@@ -80,5 +86,5 @@ classdef kernel < handle
        end
    end
     
-end
+end % end class kernel
 

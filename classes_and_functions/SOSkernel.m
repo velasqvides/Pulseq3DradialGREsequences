@@ -17,7 +17,7 @@ classdef SOSkernel < kernel
             GzPartitionArea = (-nPartitions/2) * deltaKz; % Max area
             % get a dummy gradient with the maximum area of all GzPartitions
             GzPartitionMax = mr.makeTrapezoid('z',systemLimits,'Area',GzPartitionArea);
-        end
+        end % end of createGzPartitionMax
         
         function GzPartitionsCell = createAllGzPartitions(obj)
             nPartitions = obj.protocol.nPartitions;
@@ -25,16 +25,18 @@ classdef SOSkernel < kernel
             deltaKz = obj.protocol.deltaKz;
             GzPartitionMax = createGzPartitionMax(obj);
             
-            GzPartitionAreas = ((0:nPartitions-1) - nPartitions/2) * deltaKz; % areas go from bottom to top
+            % areas go from bottom to top
+            GzPartitionAreas = ((0:nPartitions-1) - nPartitions/2) * deltaKz; 
             fixedGradientDuration = mr.calcDuration(GzPartitionMax);
             
             % make partition encoding gradients
             GzPartitionsCell = cell(1,nPartitions);
             for iz = 1:nPartitions
-                GzPartitionsCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',GzPartitionAreas(iz),'Duration',fixedGradientDuration);
+                GzPartitionsCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',GzPartitionAreas(iz),...
+                    'Duration',fixedGradientDuration);
             end
             
-        end
+        end % end of createAllGzPartitions
         
         function GzRephPlusPartitionsCell = createGzRephPlusPartitions(obj)
             nPartitions = obj.protocol.nPartitions;
@@ -57,11 +59,12 @@ classdef SOSkernel < kernel
             GzRephPlusPartitionsCell = cell(1,nPartitions);
             for iz = 1:nPartitions
                 % here, the area of the slab-rephasing lobe and partition-encoding lobes are added together
-                GzRephPlusPartitionsCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',GzPartitionAreas(iz) + GzRephArea,...
+                GzRephPlusPartitionsCell{iz} = mr.makeTrapezoid('z',systemLimits,...
+                    'Area',GzPartitionAreas(iz) + GzRephArea,...
                     'Duration',fixedGradientDuration);
             end
             
-        end
+        end % end of createGzRephPlusPartitions
         
         function GzCombinedCell = combineGzWithGzRephPlusPartitions(obj)
             nPartitions = obj.protocol.nPartitions;
@@ -78,7 +81,7 @@ classdef SOSkernel < kernel
                     GzCombinedCell{iz} = mr.addGradients({Gz, GzRephPlusPartitionsCell{iz}}, 'system', systemLimits);
                 end
             end
-        end
+        end % end of combineGzWithGzRephPlusPartitions
         
         function [GzSpoilersCell, dispersionsPerTR] = createGzSpoilers(obj)
             
@@ -97,7 +100,8 @@ classdef SOSkernel < kernel
             if phaseDispersionZ == 0 % just refocuse the phase encoding gradient in Z direction
                 duration = mr.calcDuration(GzPartitionMax);
                 for iz = 1:nPartitions
-                    GzSpoilersCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',-GzPartitionsCell{iz}.area,'Duration',duration);
+                    GzSpoilersCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',-GzPartitionsCell{iz}.area,...
+                        'Duration',duration);
                     areaTotal = GzPartitionsCell{iz}.area + GzSpoilersCell{iz}.area;
                     dispersionsPerTR(iz) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
@@ -109,14 +113,17 @@ classdef SOSkernel < kernel
                 fixedDurationGradient = mr.calcDuration(dummyGradient);
                 for iZ=1:nPartitions
                     % GzPartition already add some phase dispersion to the spins
-                    dispersionDueToThisPartition = obj.calculatePhaseDispersion(abs(GzPartitionsCell{iZ}.area), partitionThickness);
+                    dispersionDueToThisPartition = obj.calculatePhaseDispersion(abs(GzPartitionsCell{iZ}.area), ...
+                        partitionThickness);
                     % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
                     dispersionNeededZ = abs(phaseDispersionZ - dispersionDueToThisPartition);
                     AreaSpoilingNeededZ = dispersionNeededZ / (2 * pi * partitionThickness);
                     if GzPartitionsCell{iZ}.area < 0
-                        GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,...
+                            'Duration',fixedDurationGradient,'system',systemLimits);
                     else
-                        GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        GzSpoilersCell{iZ} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,...
+                            'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{iZ}.area + GzSpoilersCell{iZ}.area;
                     dispersionsPerTR(iZ) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
@@ -129,28 +136,32 @@ classdef SOSkernel < kernel
                     dummyGradient = mr.makeTrapezoid('z',systemLimits,'Area',abs(AreaSpoilingZ_max));
                     fixedDurationGradient = mr.calcDuration(dummyGradient);
                 else
-                    AreaSpoilingZ_max = abs(phaseDispersionZ-dispersionDueToGzPartitionMax) / (2 * pi * partitionThickness);
+                    AreaSpoilingZ_max = abs(phaseDispersionZ-dispersionDueToGzPartitionMax) / ...
+                        (2 * pi * partitionThickness);
                     dummyGradient = mr.makeTrapezoid('z',systemLimits,'Area',abs(AreaSpoilingZ_max));
                     fixedDurationGradient = mr.calcDuration(dummyGradient);
                 end
                 for ii=1:nPartitions
                     % GzPartition already add some phase dispersion to the spins
-                    dispersionDueToThisPartition = obj.calculatePhaseDispersion(abs(GzPartitionsCell{ii}.area), partitionThickness);
+                    dispersionDueToThisPartition = obj.calculatePhaseDispersion(abs(GzPartitionsCell{ii}.area), ...
+                        partitionThickness);
                     % Then we calculate the phase dispersion needed to get phaseDispersionZ in total
                     dispersionNeededZ = abs(phaseDispersionZ - dispersionDueToThisPartition);
                     AreaSpoilingNeededZ = dispersionNeededZ / (2 * pi * partitionThickness);
                     haveSameSign1 = (GzPartitionsCell{ii}.area < 0 && (dispersionDueToThisPartition >= phaseDispersionZ));
                     haveSameSign2 = (GzPartitionsCell{ii}.area > 0 && (dispersionDueToThisPartition <= phaseDispersionZ));
                     if (haveSameSign1 || haveSameSign2)
-                        GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',AreaSpoilingNeededZ,...
+                            'Duration',fixedDurationGradient,'system',systemLimits);
                     else
-                        GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,'Duration',fixedDurationGradient,'system',systemLimits);
+                        GzSpoilersCell{ii} = mr.makeTrapezoid('z','Area',-AreaSpoilingNeededZ,...
+                            'Duration',fixedDurationGradient,'system',systemLimits);
                     end
                     areaTotal = GzPartitionsCell{ii}.area + GzSpoilersCell{ii}.area;
                     dispersionsPerTR(ii) = obj.calculatePhaseDispersion(areaTotal, partitionThickness);
                 end
             end
-        end
+        end % end of createGzSpoilers
         
         function SeqEvents = collectSequenceEvents(obj)
             [RF, ~, ~] = createSlabSelectionEvents(obj);
@@ -166,7 +177,7 @@ classdef SOSkernel < kernel
             SeqEvents.GxPlusSpoiler = GxPlusSpoiler;
             SeqEvents.GzSpoilersCell = GzSpoilersCell;
             SeqEvents.ADC = ADC;
-        end
+        end % end of collectSequenceEvents
         
         function AlignedSeqEvents = alignSeqEvents(obj)
             SeqEvents = collectSequenceEvents(obj);
@@ -206,7 +217,8 @@ classdef SOSkernel < kernel
             % region of Gx
             addDelay = Gx.riseTime + Gx.flatTime;
             for kk=1:size(GzSpoilersCell,2)
-                GzSpoilersCell{kk}.delay = GzSpoilersCell{kk}.delay + addDelay; % GzSpoiler can appear after flat region of Gx in the same block
+                % GzSpoiler can appear after flat region of Gx in the same block
+                GzSpoilersCell{kk}.delay = GzSpoilersCell{kk}.delay + addDelay; 
             end
             
             % return the aligned events in a struct, from here
@@ -217,7 +229,7 @@ classdef SOSkernel < kernel
             AlignedSeqEvents.GxPlusSpoiler = GxPlusSpoiler;
             AlignedSeqEvents.GzSpoilersCell = GzSpoilersCell;
             AlignedSeqEvents.ADC = ADC;
-        end
+        end % end of alignSeqEvents
         
         function RfPhasesRad = calculateRfPhasesRad(obj)
             nDummyScans = obj.protocol.nDummyScans;
@@ -227,9 +239,10 @@ classdef SOSkernel < kernel
             
             nRfEvents = nDummyScans + nPartitions * nSpokes;
             index = 0:1:nRfEvents - 1;
-            RfPhasesDeg = mod(0.5 * RfSpoilingIncrement * (index.^2 + index + 2), 360); % eq. (14.3) Bernstein 2004
+            % eq. (14.3) Bernstein 2004
+            RfPhasesDeg = mod(0.5 * RfSpoilingIncrement * (index.^2 + index + 2), 360); 
             RfPhasesRad = RfPhasesDeg * pi / 180; % convert to radians.
-        end
+        end % end of calculateRfPhasesRad
         
         function spokeAngles = calculateSpokeAngles(obj)
             %calculateSpokeAngles calculates the base spoke angles for one partition
@@ -244,8 +257,10 @@ classdef SOSkernel < kernel
             if strcmp(angularOrdering,'uniformAlternating')
                 
                 angularSamplingInterval = pi / nSpokes;
-                spokeAngles = angularSamplingInterval * index; % array containing necessary angles for one partition
-                spokeAngles(2:2:end) = spokeAngles(2:2:end) + pi; % add pi to every second spoke angle to achieved alternation
+                % array containing necessary angles for one partition
+                spokeAngles = angularSamplingInterval * index; 
+                % add pi to every second spoke angle to achieved alternation
+                spokeAngles(2:2:end) = spokeAngles(2:2:end) + pi; 
                 
             else
                 
@@ -268,7 +283,7 @@ classdef SOSkernel < kernel
                         spokeAngles = mod(spokeAngles, pi); % projection angles in [0, pi)
                 end
             end
-        end
+        end % end of calculateSpokeAngles
         
         function partitionRotationAngles = calculatePartitionRotationAngles(obj)
             %calculatePartitionRotationAngles calculates the angle offset across
@@ -294,7 +309,7 @@ classdef SOSkernel < kernel
                     partitionRotationAngles = mod(partitionRotationAngles, pi/nSpokes);
                     
             end
-        end
+        end % end of calculatePartitionRotationAngles
         
         function [TE_min, TR_min] = calculateMinTeTr(obj)
             gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
@@ -331,7 +346,7 @@ classdef SOSkernel < kernel
             
             TE_min = gradRasterTime*ceil(TE_min/gradRasterTime); 
             TR_min = gradRasterTime*ceil(TR_min/gradRasterTime);
-        end
+        end % end of calculateMinTeTr(obj)
         
         function [delayTE, delayTR] = calculateDelays(obj)
             gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
@@ -344,7 +359,7 @@ classdef SOSkernel < kernel
             delayTE = gradRasterTime*round(delayTE/gradRasterTime);
             delayTR = (TR - TR_min - delayTE);            
             delayTR = gradRasterTime*round(delayTR/gradRasterTime);
-        end
+        end % end of calculateDelays
         
         function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario)
             if nargin < 2
@@ -393,16 +408,18 @@ classdef SOSkernel < kernel
                             counter = counter + 1;
                         end
                     end
-            end
+            end 
             
             if selectedDummies > 0
-                allAngles = [angles(1:selectedDummies) angles]; % replicate the first nDummyScans angles for the dummy scans
-                allPartitionIndx = [partitionIndx(1:selectedDummies) partitionIndx]; % replicate the first partitionIndx indexes for the dummy scans
+                % replicate the first nDummyScans angles for the dummy scans
+                allAngles = [angles(1:selectedDummies) angles]; 
+                % replicate the first partitionIndx indexes for the dummy scans
+                allPartitionIndx = [partitionIndx(1:selectedDummies) partitionIndx]; 
             else
                 allAngles = angles;
                 allPartitionIndx = partitionIndx;
             end
-        end
+        end % end of calculateAnglesForAllSpokes
         
         function sequenceObject = createSequenceObject(obj,scenario)
             if nargin < 2
@@ -444,14 +461,16 @@ classdef SOSkernel < kernel
                                 
                     sequenceObject.addBlock( mr.rotate('z', allAngles(iF), RF, GzCombinedCell{iZ},GxPre) );
                 if iF > selectedDummies % include ADC events
-                    sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, ADC, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );                    
+                    sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, ADC, GzSpoilersCell{iZ}, ...
+                        mr.makeDelay(durationSecondBlock)) );                    
                 else % no ADC event
-                    sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, GzSpoilersCell{iZ}, mr.makeDelay(durationSecondBlock)) );
+                    sequenceObject.addBlock( mr.rotate('z', allAngles(iF), GxPlusSpoiler, GzSpoilersCell{iZ}, ...
+                        mr.makeDelay(durationSecondBlock)) );
                 end 
                 
                 RFcounter = RFcounter + 1;                
             end 
-        end
+        end % end of createSequenceObject
                
         function writeSequence(obj,scenario)
             if nargin < 2
@@ -484,7 +503,7 @@ classdef SOSkernel < kernel
             saveInfo4Reco(obj);
             
             fprintf('## ...Done\n');            
-        end
+        end % end of writeSequence
         
         function saveInfo4Reco(obj)
             info4Reco.FOV = obj.protocol.FOV;
@@ -496,7 +515,7 @@ classdef SOSkernel < kernel
             info4Reco.spokeAngles = calculateSpokeAngles(obj);
             info4Reco.partitionRotationAngles = calculatePartitionRotationAngles(obj);
             save('info4RecoSoS.mat','info4Reco');
-        end
+        end % end of saveInfo4Reco
         
         function giveTestingInfo(obj,sequenceObject)
             gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
@@ -515,12 +534,13 @@ classdef SOSkernel < kernel
             axis('equal'); % enforce aspect ratio for the correct trajectory display
             hold; plot(ktraj_adc(1,:),ktraj_adc(2,:),'r.'); % plot the sampling points
             
-            % very optional slow step, but useful for testing during development e.g. for the real TE, TR or for staying within slewrate limits
+            % very optional slow step, but useful for testing during development e.g. 
+            % for the real TE, TR or for staying within slewrate limits
             rep = sequenceObject.testReport;
             fprintf([rep{:}]);
-        end
+        end % end of giveTestingInfo
         
-    end
+    end % end of methods
     
     methods(Static)
         function giveInfoAboutSequence()
@@ -530,7 +550,7 @@ classdef SOSkernel < kernel
         end
    end
     
-end
+end % end of the class
 
 
 
