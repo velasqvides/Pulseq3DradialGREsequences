@@ -329,8 +329,8 @@ classdef SOSkernel < kernel
             gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
             singleTrKernel = createsingleTrKernel(obj);
                         
-            [duration, ~, ~] = singleTrKernel.duration();
-            [ktraj_adc, ~, t_excitation, ~, t_adc] = singleTrKernel.calculateKspace();
+            [duration, ~, ~] = thisSeqObject.duration();
+            [ktraj_adc, ~, t_excitation, ~, t_adc] = thisSeqObject.calculateKspace();
             kabs_adc = sum(ktraj_adc.^2,1).^0.5;
             [~, index_echo] = min(kabs_adc);
             t_echo = t_adc(index_echo);
