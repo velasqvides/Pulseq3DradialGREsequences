@@ -311,8 +311,7 @@ classdef SOSkernel < kernel
             end
         end % end of calculatePartitionRotationAngles
         
-        function singleTrKernel = createsingleTrKernel(obj)
-            singleTrKernel = mr.Sequence();
+        function singleTrKernel = createSingleTrKernel(obj)            
             AlignedSeqEvents = alignSeqEvents(obj);
             RF = AlignedSeqEvents.RF;
             GzCombinedCell = AlignedSeqEvents.GzCombinedCell;
@@ -320,54 +319,11 @@ classdef SOSkernel < kernel
             GxPlusSpoiler = AlignedSeqEvents.GxPlusSpoiler;
             GzSpoilersCell = AlignedSeqEvents.GzSpoilersCell;
             ADC = AlignedSeqEvents.ADC;
+            singleTrKernel = mr.Sequence();
             % add events for a single TR with no delays 
             singleTrKernel.addBlock(RF, GzCombinedCell{1},GxPre);
             singleTrKernel.addBlock(GxPlusSpoiler, ADC, GzSpoilersCell{1});
-        end
-        
-        function [TE_min, TR_min] = calculateMinTeTr(obj)
-            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
-            singleTrKernel = createsingleTrKernel(obj);
-                        
-            [duration, ~, ~] = singleTrKernel.duration();
-            [ktraj_adc, ~, t_excitation, ~, t_adc] = singleTrKernel.calculateKspace();
-            kabs_adc = sum(ktraj_adc.^2,1).^0.5;
-            [~, index_echo] = min(kabs_adc);
-            t_echo = t_adc(index_echo);
-            t_ex_tmp = t_excitation(t_excitation<t_echo);
-            TE_min = t_echo-t_ex_tmp(end);
-                        
-            if (length(t_excitation)<2)
-                TR_min=duration; % best estimate for now
-            else
-                t_ex_tmp1=t_excitation(t_excitation>t_echo);
-                if isempty(t_ex_tmp1)
-                    TR_min=t_ex_tmp(end)-t_ex_tmp(end-1);
-                else
-                    TR_min=t_ex_tmp1(1)-t_ex_tmp(end);
-                end                
-            end
-            
-            TE_min = gradRasterTime*ceil(TE_min/gradRasterTime); 
-            TR_min = gradRasterTime*ceil(TR_min/gradRasterTime);
-        end % end of calculateMinTeTr(obj)
-        
-        function [delayTE, delayTR] = calculateDelays(obj)
-            gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
-            TE = obj.protocol.TE;
-            TR = obj.protocol.TR;
-            [TE_min, TR_min] = calculateMinTeTr(obj);
-            
-            delayTE = (TE - TE_min);
-            delayTE = gradRasterTime*round(delayTE/gradRasterTime);
-            delayTR = (TR - TR_min - delayTE);            
-            delayTR = gradRasterTime*round(delayTR/gradRasterTime);
-            % next assertions modified from mr.makeDelay of pulseq
-            assert(isfinite(delayTE) & delayTE>=0,'calculateDelays:invalidDelayTE',...
-                'DelayTE (%.2f ms) is invalid',delayTE*1e3);
-            assert(isfinite(delayTR) & delayTR>=0,'calculateDelays:invalidDelayTR',...
-                'DelayTR (%.2f ms) is invalid',delayTR*1e3);
-        end % end of calculateDelays
+        end % end of createSingleTrKernel
         
         function [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario)
             if nargin < 2
