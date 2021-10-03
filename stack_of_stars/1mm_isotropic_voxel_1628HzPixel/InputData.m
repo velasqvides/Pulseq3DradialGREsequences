@@ -24,7 +24,7 @@ inputs.angleRange = 'fullCircle';         % 'fullCircle' or 'halfCircle'
 inputs.partitionRotation = 'goldenAngle'; % 'aligned', 'linear', 'goldenAngle'
 inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
-inputs.RfExcitation = 'nonSelective';    % 'nonSelective', 'selectiveSinc'
+inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
 inputs.RfPulseDuration = 400e-6;         % in seconds
 inputs.RfPulseApodization = 0.5;         % 0: unapodized, 0.46: Haming, 0.5: Hanning
 inputs.timeBwProduct = 2;                % dimensionless
