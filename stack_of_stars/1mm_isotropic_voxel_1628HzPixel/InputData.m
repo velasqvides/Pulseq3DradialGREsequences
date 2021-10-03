@@ -51,4 +51,3 @@ inputs.validateProtocol
 return
 mySOS = SOSkernel(inputs); % create a SOSkernel object
 mySOS.writeSequence('testing'); % 'writing' to write the final sequence
-
