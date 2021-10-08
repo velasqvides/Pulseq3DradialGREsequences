@@ -48,10 +48,17 @@ switch viewOrder
 end
 
 if selectedDummies > 0
+    totalNselectedSpokes = selectedSpokes * length(selectedPartitions);
+    if selectedDummies > totalNselectedSpokes % this will seldom happen
+       excessDummies = selectedDummies - totalNselectedSpokes;
+       allAngles = [angles(1:totalNselectedSpokes) angles(1:excessDummies) angles];
+       allPartitionIndx = [partitionIndx(1:totalNselectedSpokes) partitionIndx(1:excessDummies) partitionIndx];
+    else
     % replicate the first nDummyScans angles for the dummy scans
     allAngles = [angles(1:selectedDummies) angles];
     % replicate the first partitionIndx indexes for the dummy scans
     allPartitionIndx = [partitionIndx(1:selectedDummies) partitionIndx];
+    end
 else
     allAngles = angles;
     allPartitionIndx = partitionIndx;

@@ -8,7 +8,7 @@ classdef protocol < handle
         nSpokes (1,1) {mustBeNumeric, mustBeInteger, mustBePositive}=256
         bandwidthPerPixel (1,1) double {mustBeNumeric, mustBePositive}=1628
         readoutOversampling (1,1) {mustBeMember(readoutOversampling, [1, 2])}=2
-        nDummyScans (1,1) {mustBeNumeric, mustBeInteger, mustBeNonnegative}=450
+        nDummyScans (1,1) {mustBeNumeric, mustBeInteger, mustBeNonnegative,mustBeLessThan(nDummyScans,3000)}=450
         phaseDispersionReadout (1,1) double {mustBeNumeric, mustBeNonnegative}=2*pi
         RfSpoilingIncrement (1,1) double {mustBeNumeric, mustBeNonnegative}=117
         RfExcitation string {mustBeMember(RfExcitation, {'selectiveSinc','nonSelective'})}='selectiveSinc'
