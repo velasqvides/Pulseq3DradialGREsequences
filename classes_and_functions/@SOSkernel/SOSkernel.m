@@ -38,9 +38,8 @@ classdef SOSkernel < kernel
                
         writeSequence(obj,scenario)
         
-        saveInfo4Reco(obj)
+        saveInfo4Reco(obj)        
         
-        giveTestingInfo(obj,sequenceObject)
         
     end % end of methods
     

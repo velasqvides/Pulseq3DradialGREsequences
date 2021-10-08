@@ -23,6 +23,8 @@ classdef kernel < handle
     
         [delayTE, delayTR] = calculateDelays(obj)
         
+        giveTestingInfo(obj,sequenceObject)
+        
     end % end methods    
     
     methods(Static)
