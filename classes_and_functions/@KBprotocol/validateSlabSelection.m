@@ -34,9 +34,9 @@ elseif obj.RfPulseDuration > obj.RfPulseDuration_max
         RfPulseDuration_old*1e6, obj.RfPulseDuration_max*1e6, obj.RfPulseDuration_max*1e6);
     obj.RfPulseDuration = obj.RfPulseDuration_max;
 end
-% round the Rf pulse duration to the RF raster time (currently 1e-6 seconds)
-rfRasterTime = obj.systemLimits.rfRasterTime;
-obj.RfPulseDuration = rfRasterTime* round(obj.RfPulseDuration/rfRasterTime);
+% round the Rf pulse duration to the grad raster time (currently 10e-6 seconds)
+gradRasterTime = obj.systemLimits.gradRasterTime;
+obj.RfPulseDuration = gradRasterTime* round(obj.RfPulseDuration/gradRasterTime);
 
 % fix the timeBwProduct further for the transmitterBandwidth to be between the limits
 if obj.transmitterBandwidth < obj.transmitterBandwidth_min
@@ -63,7 +63,8 @@ end
 % fix the the duration of the RF pulse further...
 % for the amplitude of Gslab to be below  maxGradientAmplitude
 if obj.slabGradientAmplitude > obj.systemLimits.maxGrad % maxGrad in Hertz
-    RFduration_new = floor((obj.timeBwProduct / (obj.slabThickness * obj.systemLimits.maxGrad)),6);
+    RFduration_new = gradRasterTime * ceil( (obj.timeBwProduct / (obj.slabThickness * ...
+        obj.systemLimits.maxGrad))/gradRasterTime );
     text1 = sprintf('**RfPulseDuration = %3.1f us was changed to %3.1f us',...
         RfPulseDuration_old*1e6, RFduration_new*1e6);
     text2 = sprintf('  to keep the maximum gradient amplitude below the limit: %2.0f mT/m\n',...

@@ -5,9 +5,9 @@ inputs = SOSprotocol(); % create a SOSprotocol object
 %% I. data collection
 % 1. Resolution
 inputs.FOV = 256e-3;            % in meters
-inputs.slabThickness = 256e-3;  % in meters
+inputs.slabThickness = 10e-3;  % in meters
 inputs.nSamples = 256;  
-inputs.nPartitions = 256;        
+inputs.nPartitions = 13;        
 inputs.nSpokes = 256;                       
 inputs.bandwidthPerPixel = 1628;          % in Herz                  
 inputs.readoutOversampling = 2;           % 1: no oversampling, 2: 2x oversampling  
@@ -25,7 +25,7 @@ inputs.partitionRotation = 'goldenAngle'; % 'aligned', 'linear', 'goldenAngle'
 inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
 inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
-inputs.RfPulseDuration = 400e-6;         % in seconds
+inputs.RfPulseDuration = 20e-6;         % in seconds
 inputs.RfPulseApodization = 0.5;         % 0: unapodized, 0.46: Haming, 0.5: Hanning
 inputs.timeBwProduct = 2;                % dimensionless
 % 6. Main system limits
