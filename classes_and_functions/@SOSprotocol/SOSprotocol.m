@@ -46,7 +46,7 @@ classdef SOSprotocol < protocol
         end
         
         function slabGradientAmplitude = get.slabGradientAmplitude(obj)
-            slabGradientAmplitude = obj.timeBwProduct / (obj.slabThickness * obj.RfPulseDuration);
+            slabGradientAmplitude = obj.transmitterBandwidth / obj.slabThickness; 
         end
         
         function deltaKz = get.deltaKz(obj)
