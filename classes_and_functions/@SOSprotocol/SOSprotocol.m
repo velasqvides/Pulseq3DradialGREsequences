@@ -17,22 +17,16 @@ classdef SOSprotocol < protocol
         nPartitions_min = 5;
         nPartitions_max = 1024;
         slabThickness_min = 10e-3;
-        slabThickness_max = 500e-3;
-        transmitterBandwidth_min = 1500;
-        transmitterBandwidth_max = 250e3;
+        slabThickness_max = 500e-3;        
         partitionThickness_min = 0.2e-3;
-        partitionThickness_max = 20e-3;
-        RfPulseDuration_min = 20e-6;
-        RfPulseDuration_max = 12e-3;
-        timeBwProduct_min = 2;
-        timeBwProduct_max = 20;
+        partitionThickness_max = 20e-3;        
     end
     
     properties(Dependent,Hidden)
-        partitionThickness
-        transmitterBandwidth
+        partitionThickness        
         slabGradientAmplitude
         deltaKz
+        slabSize
     end
     
     methods
@@ -41,8 +35,8 @@ classdef SOSprotocol < protocol
             partitionThickness = obj.slabThickness / obj.nPartitions;
         end
         
-        function transmitterBandwidth = get.transmitterBandwidth(obj)
-            transmitterBandwidth = obj.timeBwProduct / obj.RfPulseDuration;
+        function slabSize = get.slabSize(obj)
+            slabSize = obj.slabThickness;
         end
         
         function slabGradientAmplitude = get.slabGradientAmplitude(obj)

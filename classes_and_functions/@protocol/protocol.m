@@ -38,6 +38,12 @@ classdef protocol < handle
         bandwidthPerPixel_max = 2000;
         spatialResolution_max = 0.2e-3;
         TR_max = 100e-3 
+        RfPulseDuration_min = 20e-6;
+        RfPulseDuration_max = 12e-3;
+        timeBwProduct_min = 2;
+        timeBwProduct_max = 20;
+        transmitterBandwidth_min = 1500;
+        transmitterBandwidth_max = 250e3;
         ADCrasterTime = 0.1e-6; % ADC raster time for Siemens machines 
     end
     
@@ -49,6 +55,7 @@ classdef protocol < handle
         dwellTime 
         readoutGradientFlatTime
         readoutGradientAmplitude
+        transmitterBandwidth         
     end
     
     methods
@@ -69,6 +76,10 @@ classdef protocol < handle
             % To keep a fixed spatial resolution and even when the sampling 
             % rate of the receiver is doubled, the gradients are unchanged
             readoutGradientAmplitude = obj.nSamples / (obj.FOV * obj.readoutDuration);
+        end
+        
+        function transmitterBandwidth = get.transmitterBandwidth(obj)
+            transmitterBandwidth = obj.timeBwProduct / obj.RfPulseDuration;
         end
         
         function spatialResolution = get.spatialResolution(obj)

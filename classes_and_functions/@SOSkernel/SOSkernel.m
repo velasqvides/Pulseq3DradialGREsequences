@@ -2,10 +2,11 @@ classdef SOSkernel < kernel
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
            
-    properties(Access = private, Constant)        
+    properties(Hidden, Constant)        
         DUMMY_SCANS_TESTING = 5         
         SPOKES_TESTING_INNER = 2
         SPOKES_TESTING_OUTER = 21
+        N_PRESCANS = 0;
     end
     
     methods

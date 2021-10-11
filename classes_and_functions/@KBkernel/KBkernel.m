@@ -2,7 +2,7 @@ classdef KBkernel < kernel
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
            
-    properties(Access = private, Constant)        
+    properties(Hidden, Constant)        
         N_PRESCANS = 360;
         DUMMY_SCANS_TESTING = 5         
         SPOKES_TESTING = 200
@@ -11,7 +11,6 @@ classdef KBkernel < kernel
     
     methods
         % method signatures
-        [RF, Gz, GzReph] = createSlabSelectionEvents(obj)
         
         GxPreModified = modifyDurationGxPre(obj) %cheked
         

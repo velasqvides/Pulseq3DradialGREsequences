@@ -1,6 +1,6 @@
 function writeSequence(obj, fileName, scenario)
 arguments
-        obj (1,1) SOSkernel        
+        obj (1,1) KBkernel        
         fileName string = '3D_koosh-ball'
         scenario string {mustBeMember(scenario, {'writing','testing'})} = 'writing'
     end

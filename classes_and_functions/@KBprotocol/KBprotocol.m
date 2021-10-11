@@ -6,30 +6,21 @@ classdef KBprotocol < protocol
         angularOrdering string {mustBeMember(angularOrdering,{'uniform', 'goldenAngle'})}='goldenAngle'
     end
     
-    properties(Access = private, Constant)        
-        transmitterBandwidth_min = 1500;
-        transmitterBandwidth_max = 250e3;        
-        RfPulseDuration_min = 20e-6;
-        RfPulseDuration_max = 12e-3;
-        timeBwProduct_min = 2;
-        timeBwProduct_max = 20;
-    end
-    
     properties(Dependent,Hidden)        
-        transmitterBandwidth
         slabGradientAmplitude
+        slabSize
     end
     
     methods
         
         function slabGradientAmplitude = get.slabGradientAmplitude(obj)
-            slabGradientAmplitude = obj.timeBwProduct / (obj.FOV * obj.RfPulseDuration);
+            slabGradientAmplitude = obj.transmitterBandwidth / obj.FOV ;
         end
         
-        function transmitterBandwidth = get.transmitterBandwidth(obj)
-            transmitterBandwidth = obj.timeBwProduct / obj.RfPulseDuration;
+        function slabSize = get.slabSize(obj)
+            slabSize = obj.FOV;
         end
-            
+                    
         % method signatures
         validateSlabSelection(obj) 
         

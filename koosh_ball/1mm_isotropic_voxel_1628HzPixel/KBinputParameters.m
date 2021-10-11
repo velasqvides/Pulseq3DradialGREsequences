@@ -30,7 +30,7 @@ inputs.systemLimits = mr.opts('MaxGrad', inputs.maxGradient, 'GradUnit', 'mT/m',
     'rfRingdownTime', 20e-6, 'rfDeadTime', 100e-6, ...
     'adcDeadTime', 20e-6);
 % 8. Main operator-selectable parameters
-inputs.TE = 1.46e-3;                     % in seconds
+inputs.TE = 1.47e-3;                     % in seconds
 inputs.TR = 2.51e-3;                     % in seconds
 inputs.flipAngle = 5;                    % in degrees
 
@@ -42,7 +42,5 @@ inputs.validateProtocol
 
 %% III. Test the sequence.
 return
-tic
 myKB = KBkernel(inputs); % create a SOSkernel object
-myKB.writeSequence('writing'); % 'writing' to write the final sequence
-toc
+myKB.writeSequence('3D_koosh-ball','testing'); % 'writing' to write the final sequence
