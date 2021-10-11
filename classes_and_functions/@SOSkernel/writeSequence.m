@@ -1,7 +1,10 @@
-function writeSequence(obj,scenario)
-if nargin < 2
-    scenario = 'writing';
-end
+function writeSequence(obj, fileName, scenario)
+arguments
+        obj (1,1) SOSkernel        
+        fileName string = '3D_stackOfStars'
+        scenario string {mustBeMember(scenario, {'writing','testing'})} = 'writing'
+    end
+
 viewOrder = obj.protocol.viewOrder;
 FOV = obj.protocol.FOV;
 slabThickness = obj.protocol.slabThickness;
@@ -24,9 +27,13 @@ if strcmp(scenario,'testing')
 end
 
 sequenceObject.setDefinition('FOV', [FOV FOV slabThickness]);
-sequenceObject.setDefinition('Name', '3D_radial_stackOfStars');
-sequenceObject.write('3D_radial_stackOfStars.seq');
+sequenceObject.setDefinition('Name', fileName);
+fileName = append(fileName,'.seq');
+sequenceObject.write(fileName);
+
+%save neccesary infor for the reocnstruction and save the protocol.  
 saveInfo4Reco(obj);
+saveParameters(obj);
 
 fprintf('## ...Done\n');
 end % end of writeSequence

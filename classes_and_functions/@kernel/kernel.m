@@ -2,7 +2,7 @@ classdef kernel < handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties(Access = protected)
+    properties
         protocol (1,1) protocol
     end
     
@@ -24,6 +24,8 @@ classdef kernel < handle
         [delayTE, delayTR] = calculateDelays(obj)
         
         giveTestingInfo(obj,sequenceObject)
+        
+        saveParameters(obj)
         
     end % end methods    
     
