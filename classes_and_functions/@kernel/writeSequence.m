@@ -1,8 +1,9 @@
-function writeSequence(obj, fileName, scenario)
+function writeSequence(obj, fileName, scenario, debugLevel)
 arguments
     obj (1,1) kernel
     fileName string 
     scenario string {mustBeMember(scenario, {'writing','testing'})} = 'writing'
+    debugLevel (1,1) {mustBeNumeric, mustBeMember(debugLevel, [1, 2, 3])} = 3
 end
     
 FOV = obj.protocol.FOV;
@@ -15,7 +16,7 @@ sequenceObject = createSequenceObject(obj,scenario);
 
 if strcmp(scenario,'testing') 
     giveInfoAboutTestingEvents(obj);
-    giveTestReportAndPlots(obj,sequenceObject);
+    giveTestReportAndPlots(obj,sequenceObject,debugLevel);
 end
 
 sequenceObject.setDefinition('FOV', [FOV FOV slabSize]);
