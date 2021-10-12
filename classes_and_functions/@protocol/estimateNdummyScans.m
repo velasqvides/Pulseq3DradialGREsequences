@@ -3,8 +3,8 @@ flipAngleRad = obj.flipAngle * pi / 180;
 % Liang, Z. P., & Lauterbur, P. C. (2000). Principles of
 % magnetic resonance imaging: a signal processing perspective.
 % p. 299, eq. (9.22).
-requieredDummyScans =  log( (obj.error)*(1 - exp(-obj.TR/obj.T1)) / (1 - cos(flipAngleRad)) ) /...
-    log( cos(flipAngleRad) * exp(-obj.TR/obj.T1) );
+requieredDummyScans =  log( (obj.error)*(1 - exp(-obj.TR/obj.T1)) / ...
+    (1 - cos(flipAngleRad)) ) / log( cos(flipAngleRad) * exp(-obj.TR/obj.T1) );
 
 requieredDummyScans = round(requieredDummyScans);
 errorPercentage = obj.error * 100;

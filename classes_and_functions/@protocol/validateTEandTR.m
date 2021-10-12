@@ -1,6 +1,6 @@
 function validateTEandTR(obj)
-thisKBkernel = KBkernel(obj);
-[TE_min, TR_min] = calculateMinTeTr(thisKBkernel);
+[TE_min, TR_min] = extractTEminTRmin(obj);
+
 TE_max = obj.TR_max - (TR_min - TE_min);
 gradRasterTime = obj.systemLimits.gradRasterTime;
 % make sure TE and TR are multiples of the Gradient raster time
@@ -44,5 +44,6 @@ if size(report,2) == 5
     report{end+1} = sprintf('TE and TR values accepted\n');
 end
 report{end+1} = sprintf('###...Done.\n\n');
+
 fprintf([report{:}]);
 end % end of validateTEandTR

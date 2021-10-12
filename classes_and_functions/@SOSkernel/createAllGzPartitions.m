@@ -1,6 +1,6 @@
 function GzPartitionsCell = createAllGzPartitions(obj)
 nPartitions = obj.protocol.nPartitions;
-systemLimits = obj.protocol.systemLimits;
+sys = obj.protocol.systemLimits;
 deltaKz = obj.protocol.deltaKz;
 GzPartitionMax = createGzPartitionMax(obj);
 
@@ -11,7 +11,7 @@ fixedGradientDuration = mr.calcDuration(GzPartitionMax);
 % make partition encoding gradients
 GzPartitionsCell = cell(1,nPartitions);
 for iz = 1:nPartitions
-    GzPartitionsCell{iz} = mr.makeTrapezoid('z',systemLimits,'Area',GzPartitionAreas(iz),...
+    GzPartitionsCell{iz} = mr.makeTrapezoid('z',sys,'Area',GzPartitionAreas(iz),...
         'Duration',fixedGradientDuration);
 end
 

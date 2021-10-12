@@ -98,9 +98,14 @@ classdef protocol < handle
                 (gradRasterTime) * ceil( obj.readoutDuration / (gradRasterTime) );
         end
         
-        estimateNdummyScans(obj) % method signature
+        % method signatures
+        estimateNdummyScans(obj) 
         
-        validateResolution(obj) % method signature
+        validateResolution(obj) 
+        
+        validateProtocol(obj)
+        
+        validateTEandTR(obj)
         
     end % end of methods
 end % end of the class

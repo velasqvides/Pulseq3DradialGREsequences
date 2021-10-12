@@ -24,9 +24,7 @@ classdef KBprotocol < protocol
         % method signatures
         validateSlabSelection(obj) 
         
-        validateTEandTR(obj) 
-        
-        validateProtocol(obj)
+        [TE_min, TR_min] = extractTEminTRmin(obj)
         
     end % end of methods
     

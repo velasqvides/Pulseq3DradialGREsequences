@@ -20,12 +20,15 @@ end
 
 sequenceObject.setDefinition('FOV', [FOV FOV slabSize]);
 sequenceObject.setDefinition('Name', fileName);
+mkdir(fileName)
+currentFolder = cd;
+cd (fileName)
 fileName2 = append(fileName,'_',scenario,'.seq');
 sequenceObject.write(fileName2);
 
 %save neccesary infor for the reocnstruction and save the protocol.  
 saveInfo4Reco(obj,fileName);
 saveParameters(obj,fileName);
-
+cd(currentFolder)
 fprintf('## ...Done\n');
 end % end of writeSequence

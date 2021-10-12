@@ -1,7 +1,7 @@
 function [GxPlusSpoiler,dispersionPerTR] = createGxPlusSpoiler(obj)
 [Gx, GxPre, ~] = createReadoutEvents(obj);
 phaseDispersionReadout = obj.protocol.phaseDispersionReadout;
-systemLimits = obj.protocol.systemLimits;
+sys = obj.protocol.systemLimits;
 spatialResolution = obj.protocol.spatialResolution;
 gradRasterTime = obj.protocol.systemLimits.gradRasterTime;
 
@@ -13,8 +13,8 @@ else
     areaSpoilingX = phaseDispersionReadout / (2 * pi * spatialResolution);
     extraAreaNeeded = areaSpoilingX - areaGxAfterTE;
     extraFlatTimeNeeded = gradRasterTime * round((extraAreaNeeded / Gx.amplitude)/ gradRasterTime);
-    GxPlusSpoiler = mr.makeTrapezoid('x','amplitude',Gx.amplitude,'FlatTime', ...
-        Gx.flatTime + extraFlatTimeNeeded,'system',systemLimits);
+    GxPlusSpoiler = mr.makeTrapezoid('x',sys,'amplitude',Gx.amplitude,'FlatTime', ...
+        Gx.flatTime + extraFlatTimeNeeded);
 end
 % since the extra flat time need to comply with the gradRaster time,
 % the exact desired phase dispersion cant be acchieved, but it will be close enough.

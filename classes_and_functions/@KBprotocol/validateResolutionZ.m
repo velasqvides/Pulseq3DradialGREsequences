@@ -1,4 +1,4 @@
-function validateSlabSelection(obj)
+function validateResolutionZ(obj)
 report = {sprintf('### Checking slab selection parameters ...\n')};
 
 % Check or fix timeBwProduct
@@ -77,7 +77,7 @@ if ~strcmp(' ',toPrintRf)
 end
 
 if size(report,2) == 1
-    report{end+1} = sprintf('All partition resolution parameters accepted\n');
+    report{end+1} = sprintf('All slab selection parameters accepted\n');
 end
 report{end+1} = sprintf('###...Done.\n\n');
 fprintf([report{:}]);

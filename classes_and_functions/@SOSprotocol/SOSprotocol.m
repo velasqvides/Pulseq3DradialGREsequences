@@ -48,12 +48,10 @@ classdef SOSprotocol < protocol
         end
         
         % method signatures
-        validateResolutionZ(obj) 
+        validateResolutionZ(obj)
         
-        validateTEandTR(obj) 
-        
-        validateProtocol(obj)
-        
+        [TE_min, TR_min] = extractTEminTRmin(obj)
+                
     end % end of methods
     
 end %end of the class

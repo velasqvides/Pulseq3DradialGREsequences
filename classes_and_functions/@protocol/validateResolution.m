@@ -4,7 +4,7 @@ function validateResolution(obj)
 % keep, for instance, the max gradient values within the limits.
 report = {sprintf('### Checking in-plane resolution ...\n')};
 
-% fix FOV
+% ## fix FOV ##
 if obj.FOV < obj.FOV_min
     report{end+1} = sprintf('**FOV =%6.3f is below lower limit %6.3f, FOV set to:%6.3f\n', ...
         obj.FOV, obj.FOV_min, obj.FOV_min);
@@ -16,7 +16,7 @@ elseif obj.FOV > obj.FOV_max
 end
 obj.FOV = round(obj.FOV,3); %round to milimeters
 
-% fix nSamples
+% ## fix nSamples ##
 toPrint = ' ';
 nSamples_old = obj.nSamples;
 if obj.nSamples < obj.nSamples_min
@@ -40,7 +40,7 @@ if ~strcmp(' ',toPrint)
     report{end+1} = toPrint;
 end
 
-% fix bandwidthPerPixel
+% ## fix bandwidthPerPixel ##
 toPrint = ' ';
 BWpixel_old = obj.bandwidthPerPixel;
 if obj.bandwidthPerPixel < obj.bandwidthPerPixel_min
@@ -78,10 +78,13 @@ if abs(obj.bandwidthPerPixel - obj.realBandwidthPerPixel) > tolerance
     report{end+1} = sprintf(['**Update: the exact bandwidthPerPixel (due to raster time'...
         ' constraints) will be %4.2f Hz/pixel\n'],obj.realBandwidthPerPixel);
 end
+
 if size(report,2) == 1
     report{end+1} = sprintf('All in-plane resolution parameters accepted\n');
 end
+
 report{end+1} = sprintf('###...Done.\n\n');
 fprintf([report{:}]);
+
 end % end of validate resolution
 
