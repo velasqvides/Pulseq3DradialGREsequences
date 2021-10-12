@@ -37,17 +37,16 @@ classdef SOSkernel < kernel
         
         sequenceObject = createSequenceObject(obj,scenario)
                
-        writeSequence(obj,scenario)
+        saveInfo4Reco(obj,fileNmae)
         
-        saveInfo4Reco(obj)         
+        giveInfoAboutTestingEvents(obj)
         
     end % end of methods
     
     methods(Static)
         
-        function giveInfoAboutSequence()
-            fprintf('## Creating the sequence...\n');
-            fprintf('**GzReph and GzPartition are merged.\n');
+        function giveInfoAboutMergedEvents()            
+            fprintf('**G_slab_Reph and G_Partition are merged.\n');
             fprintf('**G_readout and G_readoutSpoiler are merged.\n');
         end % end of static methods
         

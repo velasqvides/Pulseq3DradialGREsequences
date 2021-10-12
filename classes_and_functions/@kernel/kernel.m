@@ -25,7 +25,9 @@ classdef kernel < handle
         
         giveTestingInfo(obj,sequenceObject)
         
-        saveParameters(obj)
+        saveParameters(obj,fileName)
+        
+        writeSequence(obj, fileName, scenario)
         
     end % end methods    
     

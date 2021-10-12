@@ -12,37 +12,36 @@ classdef KBkernel < kernel
     methods
         % method signatures
         
-        GxPreModified = modifyDurationGxPre(obj) %cheked
+        GxPreModified = modifyDurationGxPre(obj) 
         
         mergedGZPre = mergeGzRephAndGZpre(obj, GzReph, GZpre)
         
-        SeqEvents = collectSequenceEvents(obj) %checked
+        SeqEvents = collectSequenceEvents(obj) 
         
-        AlignedSeqEvents = alignSeqEvents(obj) %checked
+        AlignedSeqEvents = alignSeqEvents(obj) 
         
-        RfPhasesRad = calculateRfPhasesRad(obj) %checked
+        RfPhasesRad = calculateRfPhasesRad(obj) 
         
-        [thetaArray, phiArray] = calculateScanAngles(obj) %checked
+        [thetaArray, phiArray] = calculateScanAngles(obj) 
         
-        [thetaArrayPre, phiArrayPre] = calculatePreScanAngles(ob) %checked
+        [thetaArrayPre, phiArrayPre] = calculatePreScanAngles(ob) 
           
-        [allTheta, allPhi] = calculateAnglesForAllSpokes(obj,scenario) %checked
+        [allTheta, allPhi] = calculateAnglesForAllSpokes(obj,scenario) 
         
-        singleTrKernel = createSingleTrKernel(obj) % checked
+        singleTrKernel = createSingleTrKernel(obj) 
         
-        sequenceObject = createSequenceObject(obj,scenario) % checked
-               
-        writeSequence(obj,scenario) %checked
+        sequenceObject = createSequenceObject(obj,scenario)               
+         
+        saveInfo4Reco(obj,fileName) 
         
-        saveInfo4Reco(obj) %checked
+        giveInfoAboutTestingEvents(obj)
         
     end % end of methods
     
     methods(Static)
         
-        function giveInfoAboutSequence()
-            fprintf('## Creating the sequence...\n');
-            fprintf('**GzReph and GzPre are merged.\n');
+        function giveInfoAboutMergedEvents()            
+            fprintf('**G_slab_Reph and Gz_readout_Pre are merged.\n');
             fprintf('**G_readout and G_readoutSpoiler are merged.\n');
         end % end of static methods
         
