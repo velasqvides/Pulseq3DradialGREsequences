@@ -43,4 +43,5 @@ inputs.validateProtocol
 %% III. Test the sequence.
 return
 myKB = KBkernel(inputs); % create a SOSkernel object
-myKB.writeSequence('3D_koosh-ball','testing',2); % 'writing' to write the final sequence
+% myKB.writeSequence(name,scenario,debugLevel)
+myKB.writeSequence('3D_koosh-ball','testing',3); % 'writing' to write the final sequence
