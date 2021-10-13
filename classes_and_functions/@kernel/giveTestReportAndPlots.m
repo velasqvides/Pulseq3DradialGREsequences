@@ -6,6 +6,7 @@ initialRange = DUMMY_SCANS_TESTING + N_PRESCANS;
 
 if ismember(debugLevel,[1, 2, 3])
     sequenceObject.plot();
+    showSlabProfile(obj);
 end
 if ismember(debugLevel,[2, 3])
     sequenceObject.plot('TimeRange',[initialRange initialRange+2]*TR);

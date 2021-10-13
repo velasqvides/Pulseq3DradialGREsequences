@@ -29,6 +29,8 @@ classdef kernel < handle
         
         writeSequence(obj, fileName, scenario)
         
+        showSlabProfile(obj)
+        
     end % end methods    
     
     methods(Static)
