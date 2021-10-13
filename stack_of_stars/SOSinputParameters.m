@@ -45,9 +45,9 @@ inputs.flipAngle = 5;                    % in degrees
 % Optionally, get an idea of the necessary number of dummy scans 
 inputs.T1 = 1284e-3; % T1 for white matter at 7T
 inputs.error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
-inputs.validateProtocol
+% inputs.validateProtocol
 
 %% III. Test the sequence.
 return
-mySOS = SOSkernel(inputs); % create a SOSkernel object
-mySOS.writeSequence('3D_stackOfStars','testing',2); % 'writing' to write the final sequence
+% mySOS = SOSkernel(inputs); % create a SOSkernel object
+% mySOS.writeSequence('3D_stackOfStars','testing',2); % 'writing' to write the final sequence

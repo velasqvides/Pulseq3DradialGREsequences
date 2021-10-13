@@ -1,5 +1,5 @@
 classdef protocol < handle
-    %PROTOCOL Verify and make changes to the input parameter
+    %Protocol Verify and make changes to the input parameter
     %   
     
     properties
