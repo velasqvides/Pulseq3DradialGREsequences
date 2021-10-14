@@ -6,8 +6,8 @@ inputs = KBprotocol(); % create a SOSprotocol object
 % 1. Resolution
 inputs.FOV = 256e-3;            % in meters
 inputs.nSamples = 256;         
-inputs.nSpokes = 256;                       
-inputs.bandwidthPerPixel = 1628;          % in Herz                  
+inputs.nSpokes = 58982;                       
+inputs.bandwidthPerPixel = 1630;          % in Herz                  
 inputs.readoutOversampling = 2;           % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
 inputs.nDummyScans = 470;
@@ -44,4 +44,4 @@ inputs.validateProtocol
 return
 myKB = KBkernel(inputs); % create a SOSkernel object
 % myKB.writeSequence(name,scenario,debugLevel)
-myKB.writeSequence('3D_koosh-ball','testing',1); % 'writing' to write the final sequence
+myKB.writeSequence('3D_koosh-ball','testing',3); % 'writing' to write the final sequence

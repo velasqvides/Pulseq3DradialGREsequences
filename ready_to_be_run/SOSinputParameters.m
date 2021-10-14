@@ -38,7 +38,7 @@ inputs.systemLimits = mr.opts('MaxGrad', inputs.maxGradient, 'GradUnit', 'mT/m',
     'adcDeadTime', 20e-6);
 % 8. Main operator-selectable parameters
 inputs.TE = 2.43e-3;                     % in seconds
-inputs.TR = 4.6e-3;                     % in seconds
+inputs.TR = 4.60e-3;                     % in seconds
 inputs.flipAngle = 5;                    % in degrees
 
 %% II. Validate the parameters.
@@ -51,4 +51,4 @@ inputs.validateProtocol
 return
 mySOS = SOSkernel(inputs); % create a SOSkernel object
 % mySOS.writeSequence(name,scenario,debugLevel);
-mySOS.writeSequence('3D_stackOfStars','testing',1); % 'writing' to write the final sequence
+mySOS.writeSequence('3D_stackOfStars','testing',3); % 'writing' to write the final sequence
