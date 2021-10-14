@@ -27,7 +27,7 @@ inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitio
 inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
 inputs.RfPulseDuration = 2.36e-3;         % in seconds
 inputs.RfPulseApodization = 0.5;         % 0: unapodized, 0.46: Haming, 0.5: Hanning
-inputs.timeBwProduct = 16;                % dimensionless
+inputs.timeBwProduct = 12;                % dimensionless
 % 6. Main system limits
 inputs.maxGradient = 50;                 % in mT/m
 inputs.maxSlewRate = 150;                % in T/m/s
@@ -51,4 +51,4 @@ inputs.validateProtocol
 return
 mySOS = SOSkernel(inputs); % create a SOSkernel object
 % mySOS.writeSequence(name,scenario,debugLevel);
-mySOS.writeSequence('3D_stackOfStars','testing',3); % 'writing' to write the final sequence
+mySOS.writeSequence('3D_stackOfStars','testing',1); % 'writing' to write the final sequence
