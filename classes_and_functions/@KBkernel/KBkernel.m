@@ -20,7 +20,7 @@ classdef KBkernel < kernel
         
         AlignedSeqEvents = alignSeqEvents(obj) 
         
-        RfPhasesRad = calculateRfPhasesRad(obj) 
+        nRfEvents = calculateNrfEvents(obj)
         
         [thetaArray, phiArray] = calculateScanAngles(obj) 
         

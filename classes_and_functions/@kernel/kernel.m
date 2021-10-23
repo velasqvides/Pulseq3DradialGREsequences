@@ -31,6 +31,8 @@ classdef kernel < handle
         
         showSlabProfile(obj)
         
+        RfPhasesRad = calculateRfPhasesRad(obj)
+        
     end % end methods    
     
     methods(Static)

@@ -25,7 +25,7 @@ classdef SOSkernel < kernel
         
         AlignedSeqEvents = alignSeqEvents(obj)
         
-        RfPhasesRad = calculateRfPhasesRad(obj)
+        nRfEvents = calculateNrfEvents(obj)
         
         spokeAngles = calculateSpokeAngles(obj)
         
