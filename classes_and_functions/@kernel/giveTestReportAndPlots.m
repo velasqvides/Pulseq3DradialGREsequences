@@ -13,7 +13,8 @@ if ismember(debugLevel,[2, 3])
 end
 
 % trajectory calculation
-[ktraj_adc, ktraj, ~, ~, ~] = sequenceObject.calculateKspace();
+[ktraj_adc, t_adc, ktraj, t_ktraj, t_excitation, t_refocusing] = sequenceObject.calculateKspacePP();
+[ktraj_adc, ~, ktraj, ~, ~, ~] = sequenceObject.calculateKspacePP();
 if ismember(debugLevel,[1, 2, 3])
     figure;
     plot3(ktraj(1,:),ktraj(2,:),ktraj(3,:),'b'); % a 3D plot
