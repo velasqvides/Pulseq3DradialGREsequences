@@ -7,4 +7,7 @@ addpath(genpath(pulseqPath));
 radialPath = 'C:\Users\jvelasq\Documents\GitHub\radial_GRE_sequences\classes_and_functions';
 addpath(genpath(radialPath));
 
-clear pulseqPath radialPath
+mapVBVDpath = 'C:\Users\jvelasq\Documents\GitHub\mapVBVD';
+addpath(genpath(mapVBVDpath));
+
+clear pulseqPath radialPath mapVBVDpath;
