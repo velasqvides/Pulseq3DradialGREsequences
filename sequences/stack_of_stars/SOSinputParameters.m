@@ -51,4 +51,4 @@ inputs.validateProtocol
 return
 mySOS = SOSkernel(inputs); % create a SOSkernel object
 % mySOS.writeSequence(name,scenario,debugLevel);
-mySOS.writeSequence('3D_stackOfStars','testing'); % 'writing' to write the final sequence
+mySOS.writeSequence('3D_stackOfStars','testing',1); % 'writing' to write the final sequence

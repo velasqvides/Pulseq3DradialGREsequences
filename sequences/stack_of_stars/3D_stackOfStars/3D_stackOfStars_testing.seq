@@ -13,7 +13,6 @@ FOV 0.18 0.18 0.048
 GradientRasterTime 1e-05 
 Name NaN 
 RadiofrequencyRasterTime 1e-06 
-TotalDuration 1.1623 
 
 # Format of blocks:
 # NUM DUR RF  GX  GY  GZ  ADC  EXT
@@ -5013,4 +5012,4 @@ num_samples 7
 # It can be reproduced/verified with md5sum if the file trimmed to the position right above [SIGNATURE]
 # The new line character preceding [SIGNATURE] BELONGS to the signature (and needs to be sripped away for recalculating/verification)
 Type md5
-Hash 7f9bb079af863b97c8e3ba13d58399ab
+Hash 2f820ddbc1a07bcaa0a7da4a3119a261

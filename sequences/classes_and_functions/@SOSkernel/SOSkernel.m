@@ -36,8 +36,6 @@ classdef SOSkernel < kernel
         [allAngles, allPartitionIndx] = calculateAnglesForAllSpokes(obj,scenario)
         
         sequenceObject = createSequenceObject(obj,scenario)
-               
-        saveInfo4Reco(obj,fileNmae)
         
         giveInfoAboutTestingEvents(obj)
         

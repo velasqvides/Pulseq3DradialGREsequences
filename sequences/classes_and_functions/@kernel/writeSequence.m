@@ -27,9 +27,8 @@ cd (fileName)
 fileName2 = append(fileName,'_',scenario,'.seq');
 sequenceObject.write(fileName2);
 
-%save neccesary infor for the reocnstruction and save the protocol.  
-saveInfo4Reco(obj,fileName);
-saveParameters(obj,fileName);
+%save neccesary infor for the reocnstruction and save the protocol. 
+saveProtocol(obj);
 cd(currentFolder)
 fprintf('## ...Done\n');
 end % end of writeSequence

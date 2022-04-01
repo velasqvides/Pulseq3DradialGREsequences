@@ -31,8 +31,6 @@ classdef KBkernel < kernel
         singleTrKernel = createSingleTrKernel(obj) 
         
         sequenceObject = createSequenceObject(obj,scenario)               
-         
-        saveInfo4Reco(obj,fileName) 
         
         giveInfoAboutTestingEvents(obj)
         
