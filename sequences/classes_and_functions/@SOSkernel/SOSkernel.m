@@ -38,6 +38,8 @@ classdef SOSkernel < kernel
         sequenceObject = createSequenceObject(obj,scenario)
         
         giveInfoAboutTestingEvents(obj)
+
+        saveInfo4Reco(obj)
         
     end % end of methods
     

@@ -29,6 +29,7 @@ sequenceObject.write(fileName2);
 
 %save neccesary infor for the reocnstruction and save the protocol. 
 saveProtocol(obj);
+saveInfo4Reco(obj)
 cd(currentFolder)
 fprintf('## ...Done\n');
 end % end of writeSequence

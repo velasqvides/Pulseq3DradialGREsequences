@@ -34,6 +34,8 @@ classdef KBkernel < kernel
         
         giveInfoAboutTestingEvents(obj)
         
+        saveInfo4Reco(obj)
+        
     end % end of methods
     
     methods(Static)

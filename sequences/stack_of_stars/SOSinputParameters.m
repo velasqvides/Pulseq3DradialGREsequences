@@ -4,42 +4,42 @@ clear variables
 inputs = SOSprotocol(); % create a SOSprotocol object
 %% I. data collection
 % 1. Resolution
-inputs.FOV = 180e-3;            % in meters
-inputs.slabThickness = 48e-3;  % in meters
-inputs.nSamples = 360;  
-inputs.nPartitions = 96;        
+inputs.FOV = 256e-3;                        % in meters
+inputs.slabThickness = 100e-3;              % in meters
+inputs.nSamples = 256;  
+inputs.nPartitions = 100;        
 inputs.nSpokes = 256;                       
-inputs.bandwidthPerPixel = 1000;          % in Herz                  
-inputs.readoutOversampling = 2;           % 1: no oversampling, 2: 2x oversampling  
+inputs.bandwidthPerPixel = 1628;            % in Herz                  
+inputs.readoutOversampling = 2;             % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
-inputs.nDummyScans = 75;
+inputs.nDummyScans = 499;
 % 3. Spoling strategy 
-inputs.phaseDispersionReadout = 2.47*pi;    % desired phase dispersion along readout;
-inputs.phaseDispersionZ = pi;          % desired phase dispersion along z;  
-inputs.RfSpoilingIncrement = 117;        % in degrees
+inputs.phaseDispersionReadout = 2*pi;       % desired phase dispersion along readout;
+inputs.phaseDispersionZ = 2*pi;             % desired phase dispersion along z;  
+inputs.RfSpoilingIncrement = 117;           % in degrees
 % 4. Angular ordering
-inputs.angularOrdering = 'goldenAngle';   % 'uniform', 'uniformAlternating', 'goldeAngle'
-inputs.goldenAngleSequence = 1;           % 1: goldeAngle, 2: smallGoldenAngle, >2: tinyGoldenAngles
-inputs.angleRange = 'fullCircle';         % 'fullCircle' or 'halfCircle'
-inputs.partitionRotation = 'goldenAngle'; % 'aligned', 'linear', 'goldenAngle'
+inputs.angularOrdering = 'goldenAngle';     % 'uniform', 'uniformAlternating', 'goldeAngle'
+inputs.goldenAngleSequence = 1;             % 1: goldeAngle, 2: smallGoldenAngle, >2: tinyGoldenAngles
+inputs.angleRange = 'fullCircle';           % 'fullCircle' or 'halfCircle'
+inputs.partitionRotation = 'goldenAngle';   % 'aligned', 'linear', 'goldenAngle'
 inputs.viewOrder = 'partitionsInInnerLoop'; % 'partitionsInInnerLoop', 'partitionsInOuterLoop'
 % 5. RF Excitation
-inputs.RfExcitation = 'selectiveSinc';    % 'nonSelective', 'selectiveSinc'
-inputs.RfPulseDuration = 2.36e-3;         % in seconds
-inputs.RfPulseApodization = 0.5;         % 0: unapodized, 0.46: Haming, 0.5: Hanning
-inputs.timeBwProduct = 12;                % dimensionless
+inputs.RfExcitation = 'selectiveSinc';      % 'nonSelective', 'selectiveSinc'
+inputs.RfPulseDuration = 400e-6;            % in seconds
+inputs.RfPulseApodization = 0.5;            % 0: unapodized, 0.46: Haming, 0.5: Hanning
+inputs.timeBwProduct = 2;                   % dimensionless
 % 6. Main system limits
-inputs.maxGradient = 60;                 % in mT/m
-inputs.maxSlewRate = 125;                % in T/m/s
+inputs.maxGradient = 60;                    % in mT/m
+inputs.maxSlewRate = 150;                   % in T/m/s
 % 7. Set more system limits 
 inputs.systemLimits = mr.opts('MaxGrad', inputs.maxGradient, 'GradUnit', 'mT/m', ...
     'MaxSlew', inputs.maxSlewRate, 'SlewUnit', 'T/m/s', ...
     'rfRingdownTime', 20e-6, 'rfDeadTime', 100e-6, ...
     'adcDeadTime', 20e-6);
 % 8. Main operator-selectable parameters
-inputs.TE = 3.1e-3;                     % in seconds
-inputs.TR = 5.9e-3;                     % in seconds
-inputs.flipAngle = 20;                    % in degrees
+inputs.TE = 1.58e-3;                        % in seconds
+inputs.TR = 3.07e-3;                        % in seconds
+inputs.flipAngle = 5;                       % in degrees
 
 %% II. Validate the parameters.
 % Optionally, get an idea of the necessary number of dummy scans 
