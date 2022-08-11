@@ -1,0 +1,17 @@
+#explicit
+
+/sequences/stack_of_stars/generated_seq_files/*
+/sequences/koosh_ball/generated_seq_files/*
+/reconstructions/stack_of_stars/raw_data/*
+/reconstructions/stack_of_stars/processed_data/*
+/reconstructions/koosh_ball/raw_data/*
+/reconstructions/koosh_ball/processed_data/*
+
+#implicit
+
+
+*.seq
+*.mat
+*.dat
+*.cfl
+*.hdr
