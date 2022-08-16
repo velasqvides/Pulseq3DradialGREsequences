@@ -6,6 +6,8 @@
 
 *.dat
 *.mat
+!info4RecoKB.mat
+!info4RecoSOS.mat
 *.cfl
 *.hdr
 *.seq
