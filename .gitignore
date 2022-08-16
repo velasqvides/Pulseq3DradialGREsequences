@@ -10,8 +10,4 @@
 #implicit
 
 
-*.seq
-*.mat
-*.dat
-*.cfl
-*.hdr
+

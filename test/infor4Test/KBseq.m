@@ -1,14 +1,13 @@
 % This Script gathers all the necessary information to create a 3D GRE 
-% koosh-ball sequence. 
-clear variables 
+% koosh-ball sequence.  
 inputs = KBprotocol(); % create a SOSprotocol object
 %% I. data collection
 % 1. Resolution
 inputs.FOV = 256e-3;                   % in meters
 inputs.nSamples = 256;         
-inputs.nSpokes = 8448;                       
+inputs.nSpokes = 256;                       
 inputs.bandwidthPerPixel = 1628;       % in Herz                  
-inputs.readoutOversampling = 1;        % 1: no oversampling, 2: 2x oversampling  
+inputs.readoutOversampling = 2;        % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
 inputs.nDummyScans = 515;
 % 3. Spoling strategy 
@@ -39,9 +38,3 @@ inputs.flipAngle = 5;                  % in degrees
 inputs.T1 = 1284e-3; % T1 for white matter at 7T
 inputs.error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
 inputs.validateProtocol
-
-%% III. Test the sequence.
-return
-myKB = KBkernel(inputs); % create a KBkernel object
-% myKB.writeSequence(name,scenario,debugLevel)
-myKB.writeSequence('3D_koosh-ball','testing',1); % 'writing' to write the final sequence

@@ -1,5 +1,4 @@
 
-clearvars,
 % 0. Parameters.
 load(fullfile(pwd,'raw_data','info4Reco.mat'));
 nSamples = info4Reco.nSamples;
@@ -54,6 +53,7 @@ for indx = 1:3
     spokeShifts = arrayfun(@str2num, spokeShifts);
     allDelays(indx,:) = spokeShifts.';
 end
+clear preScanData
 [Sx, Sy, Sz, Sxy, Sxz, Syz] = averageDelays(allDelays);
 
 % 5. Create the corrected 3D trajectory
@@ -62,7 +62,6 @@ trajectoryCorrected = ...
     ['traj -x%i -y%i -r -3 -c -C %s ...' ...
     '-O -q%8.6f:%8.6f:%8.6f -Q%8.6f:%8.6f:%8.6f'],...
     readoutSamples,nSpokes,scanAnglesFilePath,Sx,Sy,Sxy,Sz,Sxz,Syz));
-clearvars -except allDelays trajectoryCorrected
 
 % 6. Save corrected 3D trajectory
 filePath = fullfile(pwd, 'processed_data', 'allDelays');

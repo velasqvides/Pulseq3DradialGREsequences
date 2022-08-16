@@ -1,6 +1,5 @@
 % This Script gathers all the necessary information to create a 3D GRE 
-% stack of stars sequence. 
-clear variables 
+% stack of stars sequence.  
 inputs = SOSprotocol(); % create a SOSprotocol object
 %% I. data collection
 % 1. Resolution
@@ -46,9 +45,3 @@ inputs.flipAngle = 5;                       % in degrees
 inputs.T1 = 1500e-3; % T1 for white matter at 7T
 inputs.error = 0.10; % normalized error between longitudinal magnetization value and its steady-state value 
 inputs.validateProtocol
-
-%% III. Test the sequence.
-return
-mySOS = SOSkernel(inputs); % create a SOSkernel object
-% mySOS.writeSequence(name,scenario,debugLevel);
-mySOS.writeSequence('3D_stackOfStars','testing',1); % 'writing' to write the final sequence

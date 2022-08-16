@@ -1,5 +1,4 @@
 
-clearvars,
 % 0. Parameters.
 load(fullfile(pwd,'raw_data','info4Reco.mat'));
 nSamples = info4Reco.nSamples;
@@ -23,7 +22,7 @@ if nSpokes ~= nSpokesReco
 end
 
 % 4. 3D reconstruction
-recoMethod = 'pics'; % 'NUFFT', 'gridding', 'nlinv', 'pics'
+recoMethod = 'gridding'; % 'NUFFT', 'gridding', 'nlinv', 'pics'
 
 bitmask1 = str2double(evalc("bart('bitmask 3')"));
 bitmask2 = str2double(evalc("bart('bitmask 0 1 2')"));
@@ -56,7 +55,7 @@ end
 imageVolume = bart(sprintf(...
     'resize -c 0 %i 1 %i 2 %i',nSamples,nSamples,nSamples), imageVolume);
 delete *.cfl *.hdr
-clearvars -except imageVolume
+clear k
 
 % 5. save the reconstructed image volume
 filePath = fullfile(pwd,'processed_data','imageVolume');

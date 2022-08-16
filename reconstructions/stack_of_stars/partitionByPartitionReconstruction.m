@@ -1,5 +1,4 @@
 
-clearvars,
 % 0. Parameters.
 load(fullfile(pwd,'raw_data','info4Reco.mat'));
 nSamples = info4Reco.nSamples;
@@ -64,7 +63,7 @@ for indx = 1:nPartitions
     imageVolume(:,:,indx) = image;
 end % end first for
 delete *.cfl *.hdr
-clearvars -except imageVolume
+clear rawDataDecodedZ
 
 % 4. save the reconstructed image volume
 filePath = fullfile(pwd,'processed_data','imageVolume');

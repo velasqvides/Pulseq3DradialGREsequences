@@ -1,5 +1,4 @@
 
-clearvars,
 % 0. Parameters.
 load(fullfile(pwd,'raw_data','info4Reco.mat')); 
 nSamples = info4Reco.nSamples;
@@ -42,7 +41,7 @@ for indx = 1 : nPartitions
     trajectoryCorrected(:,:,:,indx) = tCorrected;
 end
 delete *.cfl *.hdr
-clearvars -except allDelays trajectoryCorrected
+clear rawDataDecodedZ
 
 % 3. Save corrected 2D trajectories 
 filePath = fullfile(pwd,'processed_data','allDelays');

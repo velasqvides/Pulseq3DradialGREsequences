@@ -1,5 +1,4 @@
 
-clearvars,
 % 0. Parameters
 load(fullfile(pwd,'raw_data','info4Reco.mat')); 
 nSamples = info4Reco.nSamples; 
@@ -41,7 +40,7 @@ switch viewOrder
         rearrangedRawData = ...
        reshape(rawData,[1,readoutSamples,nSpokes,nFinalCoils,nPartitions]);
 end 
-clearvars -except rearrangedRawData
+clear rawData
 
 % 4. Decode partitions performing an invese fft along partition dim
 bitmask = str2double(evalc("bart('bitmask 4')"));
@@ -51,4 +50,4 @@ clear rearrangedRawData;
 % 5. Save decoded raw data 
 filePath = fullfile(pwd,'processed_data','rawDataDecodedZ');
 writecfl(filePath,rawDataDecodedZ);
-clearvars;
+clear rawDataDecodedZ

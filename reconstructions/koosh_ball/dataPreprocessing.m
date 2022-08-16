@@ -1,5 +1,4 @@
 
-clearvars,
 % 0. Parameters.
 load(fullfile(pwd,'raw_data','info4Reco.mat')); 
 nSamples = info4Reco.nSamples; 
@@ -36,4 +35,4 @@ filePath = fullfile(pwd, 'processed_data', 'preScanData');
 writecfl(filePath, preScanData);
 filePath = fullfile(pwd, 'processed_data', 'scanData');
 writecfl(filePath, scanData);
-clearvars;
+clear scanData preScanData
