@@ -1,0 +1,2 @@
+In this folder the generated .seq files will be saved.
+Each new sequence file will be saved in a folder with the same name as the .seq file and containing the .seq file, the protocol.mat and the info4Reco.mat
