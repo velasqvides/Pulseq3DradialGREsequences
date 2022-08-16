@@ -1,17 +1,6 @@
-% test stack-of-stars sequence 
-currentFolder = cd;
-addpath(genpath(fullfile(pwd,'infor4Test')));
-cd ('../sequences'); 
-run('seqStartup.m');
-cd(currentFolder); 
-run('SOSseq.m');
-cd ('../sequences/stack_of_stars'); 
-mySOS = SOSkernel(inputs); % create a SOSkernel object
-mySOS.writeSequence('testSOS','testing',1); 
-cd(currentFolder); 
-clearvars -except currentFolder;
-
 % test the stack-of-stars reconstruction pipeline using simulated data
+currentFolder = cd;
+addpath(genpath(fullfile(pwd,'info4Test')));
 cd ('../reconstructions');
 run("recoStartup.m");
 cd(currentFolder);
@@ -34,13 +23,7 @@ axis equal; axis off; colormap('gray');
 delete *.cfl *.hdr
 clearvars -except currentFolder 
 
-% test koosh-ball sequence 
-run("KBseq.m")
-cd ('../sequences/koosh_ball') 
-myKB = KBkernel(inputs); % create a KBkernel object
-myKB.writeSequence('testKB','testing',1); 
-cd(currentFolder); 
-clearvars -except currentFolder;
+
 
 % test the koosh-ball reconstruction pipeline using simulated data
 load('info4RecoKB.mat');
@@ -65,7 +48,8 @@ cd(currentFolder);
 figure, imagesc(imageVolume(:,:,129)); 
 axis equal; axis off; colormap('gray');
 delete *.cfl *.hdr;
-rmpath(genpath(fullfile(pwd,'infor4Test')));
+
+rmpath(genpath(fullfile(pwd,'info4Test')));
 fprintf('### test passed ###');
 clearvars; 
 
