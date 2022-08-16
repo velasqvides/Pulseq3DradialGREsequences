@@ -36,6 +36,7 @@ preScanData(:,:,:,:,2) =  bart('phantom -s3 -k -t',tt(:,:,:,2));
 preScanData(:,:,:,:,3) =  bart('phantom -s3 -k -t',tt(:,:,:,3));
 writecfl(fullfile(pwd,'preScanData'),preScanData);
 
+% 5. create corrupted scanData
 tCorrupted = bart(sprintf(...
     ['traj -x%i -y%i -r -3 -c -C scanAngles ...' ...
     '-O -q0.5:0.8:0.09 -Q0.2:0.05:0.04'],readoutSamples,nSpokes));
