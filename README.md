@@ -28,8 +28,7 @@ In the [documentation] folder one can find:
 ## Images
 ![differentPlanes](./documentation/differentPlanes.png)
 Figure 1: Images of organic phantoms in three different orthogonal planes for the Koosh-
-Ball (top row), Stack of Stars (middle row) and cartesian GRE sequences (bot-
-tom row). PICS reconstruction was performed for the first two sequences and
+Ball (top row), Stack of Stars (middle row) and cartesian GRE sequences (bottom row). PICS reconstruction was performed for the first two sequences and
 the cartesian GRE images were reconstructed using the MR-vendor pipeline.
 <pre>
 
