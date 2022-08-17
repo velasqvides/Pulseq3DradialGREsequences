@@ -6,7 +6,7 @@ Both sequences allow user-friendly changes in contrast and resolution, are equip
 ## Requirements
 The following tools are required:
 
-[Pulseq] for sequence development. Source code available here:  <a class="github" href="https://github.com/pulseq/pulseq">GitHub repository</a>
+[Pulseq] for sequence development. Source code available here:  <a class="github" href="https://github.com/pulseq/pulseq">GitHub repository</a> <br/>
 [BART] for image reconstruction. Source code available here: <a class="github" href="https://github.com/mrirecon/bart">GitHub repository</a>
 
 Also, to simulate (e.g. IDEA) and/or execute the resulted sequences (i.e. .seq files) in a real scanner (e.g. Siemens, GE), one can contact the authors of [Pulseq] to obtain the respective software interpreter, together with instructions for executing the sequences in the scanner.
@@ -26,16 +26,43 @@ In the [documentation] folder one can find:
 * the literature behind this project. 
 
 ## Images
-![Foto of me](C:\Users\jvelasq\Documents\GitHub\PhD_notes\1_topics\markdown\me.png)
+![differentPlanes](./documentation/differentPlanes.png)
+Figure 1: Images of organic phantoms in three different orthogonal planes for the Koosh-
+Ball (top row), Stack of Stars (middle row) and cartesian GRE sequences (bot-
+tom row). PICS reconstruction was performed for the first two sequences and
+the cartesian GRE images were reconstructed using the MR-vendor pipeline.
+<pre>
+
+</pre>
+
+
+
+
+
+![undersampling](./documentation/undersampling.png)
+Figure 2: Undersampling capabilities of the Koosh-Ball and Stack of Stars sequences
+compared with the cartesian GRE acquisition. PICS reconstructions with
+sampling factors of 56% (left column), 42% (middle) and 34% (right column)
+with respect to the cartesian volume are shown. The reconstructions of
+undersampled cartesian GRE acquisitions were performed with GRAPPA
+using 32 reference lines.
 
 
 [//]: # (These are reference links used in the body of this readme)
 
 [Pulseq]: <https://pulseq.github.io/index.html>
+
 [BART]: <https://mrirecon.github.io/bart/>
+
 [seqStartup.m]: <https://github.com/velasqvides/Pulseq3DradialGREsequences/blob/main/sequences/seqStartup.m>
+
 [recoStartup.m]: <https://github.com/velasqvides/Pulseq3DradialGREsequences/blob/main/reconstructions/recoStartup.m>
+
 [testSequences.m]: <https://github.com/velasqvides/Pulseq3DradialGREsequences/blob/main/test/testSequences.m>
+
 [testReconstructions.m]: <https://github.com/velasqvides/Pulseq3DradialGREsequences/blob/main/test/testReconstructions.m>
+
 [documentation]: <https://github.com/velasqvides/Pulseq3DradialGREsequences/tree/main/documentation>
+
+
 
