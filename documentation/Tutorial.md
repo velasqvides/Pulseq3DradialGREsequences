@@ -8,7 +8,7 @@ In the following, a short tutorial to create a stack-of-star (SOS) sequence and 
 
 2. Create a SOSkernel object, for instance, `mySOS = SOSkernel(inputs)`.
 
-3. Create and test a .seq file using `mySOS.writeSequence('mySequence','testing',1)`; where,
+3. Create and test a .seq file using `mySOS.writeSequence('mySequence','testing',1)`; where,<br/>
 a) the first argument is the name of the sequence,<br/> b) the second argument is the scenario, which can be `testing` or `writing`. For `testing` only a certain predefined number of spokes and partitions will be tested to accelerate the testing process.<br/>
 c) the third argument is the debug level that can be `1`,`2` or `3`, being the `3` the higher level and which brings apart from the plots, a test report that is "a very slow step, but useful for testing during development, e.g. for the real TE, TR or for staying within slewrate limits".
 
