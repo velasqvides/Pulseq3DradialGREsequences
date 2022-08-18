@@ -18,7 +18,7 @@ c) the third argument is the debug level that can be `1`,`2` or `3`, being the `
 
 ## Image reconstruction
 1. Copy the raw data (usually .dat file) and the `info4Reco.mat` variable to the folder [raw_data].
-2. Execute the script [dataPreprocessing.m]. The `rawDataName` and `nFinalCoils` should be change here.
+2. Execute the script [dataPreprocessing.m]. The `rawDataName` and `nFinalCoils` variables should be change here.
 3. Execute the script [gradientDelayCorrection.m].
 4. Execute the script [partitionByPartitionReconstruction.m].
 5. During the execution of those three scrips some `cfl` and `hdr` files will be created and saved in the folder [processed_data], including the final reconstructed imageVolume. 
