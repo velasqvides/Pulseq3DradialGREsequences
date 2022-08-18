@@ -7,7 +7,9 @@ Both sequences allow user-friendly changes in contrast and resolution, are equip
 The following tools are required:
 
 [Pulseq] for sequence development. Source code available here:  <a class="github" href="https://github.com/pulseq/pulseq">GitHub repository</a>. <br/>
-[BART] for image reconstruction. Source code available here: <a class="github" href="https://github.com/mrirecon/bart">GitHub repository</a>.
+[BART] for image reconstruction. Source code available here: <a class="github" href="https://github.com/mrirecon/bart">GitHub repository</a>. <br/>
+
+For the reconstruction part, it is recommended to use Linux since running `BART` on Windows is currently not supported. For the sequence development, `Pulseq` works well on Windows/Linux.
 
 Also, to simulate (e.g. IDEA) and/or execute the resulted sequences (i.e. .seq files) in a real scanner (e.g. Siemens, GE), one can contact the authors of [Pulseq] to obtain the respective software interpreter, together with instructions for executing the sequences in the scanner.
 
@@ -26,6 +28,8 @@ In the [documentation] folder one can find:
 * the literature behind this project. 
 
 ## Images
+Measurements were performed on a Siemens 7T whole-body MRI (Siemens Healthcare,
+Erlangen, Germany) using a 32-channel head coil.
 ![differentPlanes](./documentation/differentPlanes.png)
 Figure 1: Images of organic phantoms in three different orthogonal planes for the Koosh-
 Ball (top row), Stack of Stars (middle row) and cartesian GRE sequences (bottom row). PICS reconstruction was performed for the first two sequences and
