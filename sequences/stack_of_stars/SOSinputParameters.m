@@ -9,7 +9,7 @@ inputs.slabThickness = 100e-3;              % in meters
 inputs.nSamples = 256;  
 inputs.nPartitions = 100;        
 inputs.nSpokes = 256;                       
-inputs.bandwidthPerPixel = 1628;            % in Herz                  
+inputs.bandwidthPerPixel = 2100;            % in Herz                  
 inputs.readoutOversampling = 2;             % 1: no oversampling, 2: 2x oversampling  
 % 2. Approach to steady state
 inputs.nDummyScans = 522;
