@@ -1,7 +1,7 @@
 # Open-source Radial 3D GRE Sequences
 Implementations of 3D stack-of-stars and koosh-ball radial GRE sequences using `Pulseq`, and their reconstruction pipelines using `BART`.
 
-Both sequences allow user-friendly changes in contrast and resolution, are equipped with advanced features, and their resulted images are visually on par with a commercial cartesian GRE counterpart.
+Both sequences allow user-friendly changes in contrast and resolution, are equipped with interesting features, and their resulted images are visually on par with a commercial cartesian GRE counterpart.
 
 ## Requirements
 The following tools are required:
@@ -29,7 +29,9 @@ In the [documentation] folder one can find:
 
 ## Images
 Measurements were performed on a Siemens 7T whole-body MRI (Siemens Healthcare,
-Erlangen, Germany) using a 32-channel head coil.
+Erlangen, Germany) using a 32-channel head coil.<br/>
+
+
 ![differentPlanes](./documentation/differentPlanes.png)
 Figure 1: Images of organic phantoms in three different orthogonal planes for the Koosh-
 Ball (top row), Stack of Stars (middle row) and cartesian GRE sequences (bottom row). PICS reconstruction was performed for the first two sequences and
