@@ -27,6 +27,12 @@ In the [documentation] folder one can find:
 * details about the reconstruction pipelines and their features
 * the literature behind this project. 
 
+## Cite
+Jose Raul Velasquez Vides, Oliver Speck, Thoralf Niendorf, Hendrik Mattern;
+*Development of Freely Available 3D Radial Gradient Echo Sequences
+and Reconstruction*; 13th Annual Scientific Symposium Ultrahigh Field Magnetic Resonance. September 2022, Berlin
+
+
 ## Images
 Measurements were performed on a Siemens 7T whole-body MRI (Siemens Healthcare,
 Erlangen, Germany) using a 32-channel head coil.<br/>
