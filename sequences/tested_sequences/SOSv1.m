@@ -5,9 +5,9 @@ inputs = SOSprotocol(); % create a SOSprotocol object
 %% I. data collection
 % 1. Resolution
 inputs.FOV = 200e-3;                        % in meters
-inputs.slabThickness = 100e-3;              % in meters
+inputs.slabThickness = 200e-3;              % in meters
 inputs.nSamples = 256;  
-inputs.nPartitions = 128;        
+inputs.nPartitions = 256;        
 inputs.nSpokes = 256;                       
 inputs.bandwidthPerPixel = 1200;            % in Herz                  
 inputs.readoutOversampling = 2;             % 1: no oversampling, 2: 2x oversampling  
